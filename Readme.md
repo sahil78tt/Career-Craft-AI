@@ -222,7 +222,7 @@ uvicorn server:app --reload
 ```bash
 cd frontend
 npm install
-npm run dev
+npm run start
 ```
 
 Frontend: http://localhost:3000  
@@ -261,7 +261,7 @@ VITE_BACKEND_URL=http://localhost:8000
 
 ## 👨‍💻 Author
 
-Utkarsh Tiwari , Sahil Vishwakarma & Harsh Gupta 
+Utkarsh Tiwari , Sahil Vishwakarma & Harsh Gupta
 AI/ML & Full Stack Developers
 
 ---

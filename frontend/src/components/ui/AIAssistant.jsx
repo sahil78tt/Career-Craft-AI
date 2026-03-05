@@ -1,4 +1,5 @@
 import React, { useState, useRef, useEffect } from "react";
+import chatBotIcon from "../../assets/chatbot.png";
 
 const AIAssistant = () => {
   const [isOpen, setIsOpen] = useState(false);
@@ -110,12 +111,17 @@ box-shadow: 0 4px 15px rgba(41,151,255,0.25);          transition: all 0.3s ease
           border-bottom: 1px solid rgba(255,255,255,0.07);
         }
         .ai-avatar {
-          width: 36px; height: 36px; border-radius: 11px;
-          background: linear-gradient(135deg, #2997ff, #5ac8fa);
-          display: flex; align-items: center; justify-content: center;
-          font-size: 17px; flex-shrink: 0;
-          box-shadow: 0 4px 14px rgba(41,151,255,0.3);
-        }
+  width: 54px;
+  height: 54px;
+  border-radius: 14px;
+  background: linear-gradient(135deg, #2997ff, #5ac8fa);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  box-shadow: 0 4px 14px rgba(41,151,255,0.3);
+  overflow: hidden;
+}
         .ai-header-info { flex: 1; }
         .ai-header-name {
           font-size: 14px; font-weight: 600; color: #f5f5f7;
@@ -242,7 +248,19 @@ box-shadow: 0 4px 15px rgba(41,151,255,0.25);          transition: all 0.3s ease
       {isOpen && (
         <div className="ai-panel">
           <div className="ai-header">
-            <div className="ai-avatar">🤖</div>
+            <div className="ai-avatar">
+              <div className="ai-avatar">
+                <img
+                  src={chatBotIcon}
+                  alt="AI"
+                  style={{
+                    width: "100%",
+                    height: "100%",
+                    objectFit: "cover",
+                  }}
+                />
+              </div>
+            </div>
             <div className="ai-header-info">
               <div className="ai-header-name">AI Career Advisor</div>
               <div className="ai-header-status">
@@ -338,7 +356,16 @@ box-shadow: 0 4px 15px rgba(41,151,255,0.25);          transition: all 0.3s ease
             />
           </svg>
         ) : (
-          "🤖"
+          <img
+            src={chatBotIcon}
+            alt="AI"
+            style={{
+              width: "100%",
+              height: "100%",
+              objectFit: "cover",
+              borderRadius: "16px",
+            }}
+          />
         )}
       </button>
     </>
