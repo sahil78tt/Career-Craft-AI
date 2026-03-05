@@ -9,9 +9,11 @@ const Login = ({ setUser }) => {
   const [tab, setTab] = useState("login");
 
   const [loginData, setLoginData] = useState({ email: "", password: "" });
-  const [signupData, setSignupData] = useState({ name: "", email: "", password: "" });
-
-  // ── ORIGINAL LOGIC UNTOUCHED ──────────────────────────────────────────────
+  const [signupData, setSignupData] = useState({
+    name: "",
+    email: "",
+    password: "",
+  });
 
   const handleLogin = async (e) => {
     e.preventDefault();
@@ -45,7 +47,10 @@ const Login = ({ setUser }) => {
         password: signupData.password,
       });
       const token = loginResponse.data.access_token;
-      const user = { name: loginResponse.data.name, email: loginResponse.data.email };
+      const user = {
+        name: loginResponse.data.name,
+        email: loginResponse.data.email,
+      };
       localStorage.setItem("token", token);
       localStorage.setItem("user", JSON.stringify(user));
       setUser(user);
@@ -59,135 +64,247 @@ const Login = ({ setUser }) => {
     }
   };
 
-  // ── UI ────────────────────────────────────────────────────────────────────
-
   return (
     <>
       <style>{`
-        @import url('https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=DM+Sans:wght@300;400;500;600&display=swap');
-        .login-root {
+        .lg-root {
           min-height: 100vh;
-          background: #080c10;
+          background: #000000;
           display: flex; align-items: center; justify-content: center;
           padding: 24px; position: relative; overflow: hidden;
-          font-family: 'DM Sans', sans-serif;
+          font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'SF Pro Text', 'Helvetica Neue', sans-serif;
         }
-        .login-bg-glow {
-          position: absolute; top: 0; left: 50%; transform: translateX(-50%);
-          width: 800px; height: 400px;
-          background: radial-gradient(ellipse, rgba(99,235,218,0.1) 0%, transparent 70%);
+        .lg-glow-top {
+          position: absolute; top: -200px; left: 50%; transform: translateX(-50%);
+          width: 900px; height: 600px; border-radius: 50%;
+          background: radial-gradient(ellipse, rgba(41,151,255,0.1) 0%, transparent 65%);
           pointer-events: none;
         }
-        .login-bg-grid {
-          position: absolute; inset: 0; pointer-events: none; opacity: 0.02;
-          background-image: linear-gradient(#63ebda 1px,transparent 1px),linear-gradient(90deg,#63ebda 1px,transparent 1px);
-          background-size: 60px 60px;
+        .lg-glow-right {
+          position: absolute; bottom: -100px; right: -100px;
+          width: 600px; height: 600px; border-radius: 50%;
+          background: radial-gradient(circle, rgba(90,200,250,0.05) 0%, transparent 65%);
+          pointer-events: none;
         }
-        .login-grid { position: relative; z-index: 10; width: 100%; max-width: 900px; display: grid; gap: 40px; align-items: center; }
-        @media (min-width: 768px) { .login-grid { grid-template-columns: 1fr 1fr; } }
-        .login-left { display: none; }
-        @media (min-width: 768px) { .login-left { display: block; animation: fadeUp 0.6s ease both; } }
-        @keyframes fadeUp { from { opacity:0; transform:translateY(20px); } to { opacity:1; transform:translateY(0); } }
-        .login-logo { display: flex; align-items: center; gap: 10px; margin-bottom: 28px; }
-        .login-logo-icon {
-          width: 40px; height: 40px; border-radius: 12px;
-          background: linear-gradient(135deg, #63ebda, #2dd4bf);
+
+        @keyframes lgPageIn {
+          from { opacity: 0; transform: translateY(20px); }
+          to   { opacity: 1; transform: translateY(0); }
+        }
+        @keyframes lgCardIn {
+          from { opacity: 0; transform: translateY(24px); }
+          to   { opacity: 1; transform: translateY(0); }
+        }
+        @keyframes lgPulse {
+          0%,100% { opacity: 1; transform: scale(1); }
+          50%      { opacity: 0.4; transform: scale(0.85); }
+        }
+
+        .lg-grid {
+          position: relative; z-index: 10;
+          width: 100%; max-width: 920px;
+          display: grid; gap: 48px; align-items: center;
+        }
+        @media(min-width: 768px) { .lg-grid { grid-template-columns: 1fr 1fr; } }
+
+        /* Left panel */
+        .lg-left {
+          display: none;
+          animation: lgPageIn 0.6s cubic-bezier(0.4, 0, 0.2, 1) both;
+        }
+        @media(min-width: 768px) { .lg-left { display: block; } }
+
+        .lg-logo {
+          display: flex; align-items: center; gap: 10px; margin-bottom: 32px;
+          text-decoration: none;
+        }
+        .lg-logo-mark {
+          width: 36px; height: 36px; border-radius: 10px;
+          background: linear-gradient(135deg, #2997ff, #5ac8fa);
           display: flex; align-items: center; justify-content: center;
-          box-shadow: 0 0 24px rgba(99,235,218,0.4);
+          box-shadow: 0 4px 16px rgba(41,151,255,0.35); flex-shrink: 0;
         }
-        .login-logo-text { font-family: 'Syne', sans-serif; font-weight: 700; font-size: 20px; color: #fff; }
-        .login-logo-text span { color: #63ebda; }
-        .login-headline {
-          font-family: 'Syne', sans-serif; font-weight: 800;
-          font-size: clamp(32px, 4vw, 44px); color: #fff;
-          line-height: 1.1; margin-bottom: 16px;
+        .lg-logo-name {
+          font-size: 17px; font-weight: 700; color: #f5f5f7; letter-spacing: -0.02em;
         }
-        .login-headline-accent {
-          background: linear-gradient(90deg, #63ebda, #fff 50%, #63ebda);
-          background-size: 200% auto;
+        .lg-logo-name span {
+          background: linear-gradient(135deg, #2997ff, #5ac8fa);
           -webkit-background-clip: text; -webkit-text-fill-color: transparent;
           background-clip: text;
-          animation: shimmer 4s linear infinite;
         }
-        @keyframes shimmer { 0%{background-position:-200% center} 100%{background-position:200% center} }
-        .login-desc { color: #8b949e; font-size: 15px; line-height: 1.65; margin-bottom: 28px; }
-        .login-features { display: flex; flex-direction: column; gap: 10px; }
-        .login-feature { display: flex; align-items: center; gap: 10px; font-size: 13px; color: #8b949e; }
-        .login-feature-check {
-          width: 20px; height: 20px; border-radius: 50%; flex-shrink: 0;
-          background: rgba(99,235,218,0.12); border: 1px solid rgba(99,235,218,0.3);
+
+        .lg-headline {
+          font-size: clamp(34px, 4.5vw, 50px);
+          font-weight: 700; color: #f5f5f7;
+          letter-spacing: -0.035em; line-height: 1.08;
+          margin-bottom: 16px;
+        }
+        .lg-headline-accent {
+          background: linear-gradient(135deg, #2997ff, #5ac8fa);
+          -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+          background-clip: text;
+        }
+        .lg-desc {
+          color: #6e6e73; font-size: 15px; line-height: 1.65;
+          margin-bottom: 32px; max-width: 360px;
+        }
+
+        .lg-features { display: flex; flex-direction: column; gap: 12px; }
+        .lg-feature {
+          display: flex; align-items: center; gap: 12px;
+          font-size: 14px; color: #a1a1a6;
+        }
+        .lg-feature-check {
+          width: 22px; height: 22px; border-radius: 50%; flex-shrink: 0;
+          background: rgba(41,151,255,0.1);
+          border: 1px solid rgba(41,151,255,0.25);
           display: flex; align-items: center; justify-content: center;
         }
-        .login-card {
-          background: rgba(13,17,23,0.8);
-          border: 1px solid rgba(99,235,218,0.2);
-          border-radius: 24px; padding: 32px;
-          backdrop-filter: blur(16px);
-          animation: fadeUp 0.6s 0.1s ease both;
+
+        /* Auth card */
+        .lg-card {
+          background: rgba(255,255,255,0.03);
+          border: 1px solid rgba(255,255,255,0.09);
+          border-radius: 24px; padding: 36px;
+          backdrop-filter: blur(24px);
+          box-shadow: 0 32px 80px rgba(0,0,0,0.4), 0 0 0 1px rgba(255,255,255,0.04);
+          animation: lgCardIn 0.6s 0.1s cubic-bezier(0.4, 0, 0.2, 1) both;
         }
-        .login-card-title { font-family: 'Syne', sans-serif; font-weight: 700; font-size: 22px; color: #fff; margin-bottom: 4px; }
-        .login-card-sub { color: #8b949e; font-size: 13px; margin-bottom: 24px; }
-        .login-tabs { display: flex; background: rgba(255,255,255,0.05); border-radius: 12px; padding: 4px; margin-bottom: 24px; }
-        .login-tab {
-          flex: 1; padding: 9px; text-align: center; border-radius: 9px;
+
+        .lg-card-eyebrow {
+          display: inline-flex; align-items: center; gap: 6px;
+          padding: 5px 12px; border-radius: 999px;
+          background: rgba(41,151,255,0.1); border: 1px solid rgba(41,151,255,0.2);
+          color: #2997ff; font-size: 11px; font-weight: 500;
+          letter-spacing: 0.02em; margin-bottom: 16px;
+        }
+        .lg-eyebrow-dot {
+          width: 5px; height: 5px; border-radius: 50%; background: #2997ff;
+          animation: lgPulse 2.5s ease-in-out infinite;
+        }
+        .lg-card-title {
+          font-size: 24px; font-weight: 700; color: #f5f5f7;
+          letter-spacing: -0.02em; margin-bottom: 6px;
+        }
+        .lg-card-sub { color: #6e6e73; font-size: 14px; margin-bottom: 28px; }
+
+        .lg-tabs {
+          display: flex;
+          background: rgba(255,255,255,0.04);
+          border: 1px solid rgba(255,255,255,0.07);
+          border-radius: 12px; padding: 4px;
+          margin-bottom: 28px; gap: 4px;
+        }
+        .lg-tab {
+          flex: 1; padding: 9px 12px; text-align: center; border-radius: 9px;
           font-size: 13px; font-weight: 500; cursor: pointer;
-          border: none; transition: all 0.2s ease;
+          border: none; transition: all 0.2s ease; font-family: inherit;
+          letter-spacing: -0.01em;
         }
-        .login-tab.active { background: #63ebda; color: #080c10; font-weight: 600; }
-        .login-tab.inactive { background: transparent; color: #8b949e; }
-        .login-tab.inactive:hover { color: #fff; }
-        .login-field { margin-bottom: 16px; }
-        .login-label { display: block; font-size: 11px; font-weight: 500; color: #8b949e; text-transform: uppercase; letter-spacing: 0.8px; margin-bottom: 7px; }
-        .login-input {
+        .lg-tab-active {
+          background: #2997ff; color: #ffffff; font-weight: 600;
+          box-shadow: 0 2px 12px rgba(41,151,255,0.35);
+        }
+        .lg-tab-inactive { background: transparent; color: #6e6e73; }
+        .lg-tab-inactive:hover { color: #a1a1a6; background: rgba(255,255,255,0.05); }
+
+        .lg-field { margin-bottom: 18px; }
+        .lg-label {
+          display: block; font-size: 11px; font-weight: 600; color: #6e6e73;
+          text-transform: uppercase; letter-spacing: 0.07em; margin-bottom: 8px;
+        }
+        .lg-input {
           width: 100%; padding: 12px 16px; border-radius: 12px; font-size: 14px;
-          background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1);
-          color: #f0f6fc; outline: none; transition: all 0.2s;
-          font-family: 'DM Sans', sans-serif;
+          background: rgba(255,255,255,0.04);
+          border: 1px solid rgba(255,255,255,0.08);
+          color: #f5f5f7; outline: none;
+          transition: border-color 0.2s ease, background 0.2s ease, box-shadow 0.2s ease;
+          font-family: inherit; box-sizing: border-box;
         }
-        .login-input::placeholder { color: #484f58; }
-        .login-input:focus { border-color: rgba(99,235,218,0.45); background: rgba(99,235,218,0.04); }
-        .login-btn {
-          width: 100%; padding: 13px; border-radius: 12px; border: none;
-          font-size: 14px; font-weight: 600; cursor: pointer;
-          background: linear-gradient(135deg, #63ebda, #2dd4bf);
-          color: #080c10; font-family: 'Syne', sans-serif;
-          transition: all 0.2s ease; margin-top: 8px;
+        .lg-input::placeholder { color: #3a3a3c; }
+        .lg-input:focus {
+          border-color: rgba(41,151,255,0.45);
+          background: rgba(41,151,255,0.04);
+          box-shadow: 0 0 0 3px rgba(41,151,255,0.1);
         }
-        .login-btn:hover:not(:disabled) { transform: translateY(-2px); box-shadow: 0 8px 28px rgba(99,235,218,0.35); }
-        .login-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+
+        .lg-btn {
+          width: 100%; padding: 14px; border-radius: 14px; border: none;
+          font-size: 15px; font-weight: 600; cursor: pointer;
+          background: #2997ff; color: #ffffff;
+          font-family: inherit; letter-spacing: -0.01em;
+          transition: all 0.25s ease; margin-top: 8px;
+          position: relative; overflow: hidden;
+        }
+        .lg-btn::before {
+          content: '';
+          position: absolute; inset: 0;
+          background: linear-gradient(135deg, rgba(255,255,255,0.14) 0%, transparent 60%);
+          pointer-events: none;
+        }
+        .lg-btn:hover:not(:disabled) {
+          transform: translateY(-2px);
+          box-shadow: 0 8px 30px rgba(41,151,255,0.4);
+          background: #2484e0;
+        }
+        .lg-btn:active:not(:disabled) { transform: translateY(0); }
+        .lg-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+
+        .lg-divider {
+          height: 1px; background: rgba(255,255,255,0.06); margin: 4px 0 20px;
+        }
       `}</style>
 
-      <div className="login-root">
-        <div className="login-bg-glow"/>
-        <div className="login-bg-grid"/>
+      <div className="lg-root">
+        <div className="lg-glow-top" />
+        <div className="lg-glow-right" />
 
-        <div className="login-grid">
+        <div className="lg-grid">
           {/* Left panel */}
-          <div className="login-left">
-            <div className="login-logo">
-              <div className="login-logo-icon">
-                <svg width="18" height="18" viewBox="0 0 16 16" fill="none">
-                  <path d="M8 1L14 4.5V11.5L8 15L2 11.5V4.5L8 1Z" stroke="#080c10" strokeWidth="1.5"/>
-                  <circle cx="8" cy="8" r="2" fill="#080c10"/>
+          <div className="lg-left">
+            <div className="lg-logo">
+              <div className="lg-logo-mark">
+                <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+                  <path
+                    d="M8 1L14 4.5V11.5L8 15L2 11.5V4.5L8 1Z"
+                    stroke="white"
+                    strokeWidth="1.5"
+                  />
+                  <circle cx="8" cy="8" r="2" fill="white" />
                 </svg>
               </div>
-              <div className="login-logo-text">Career<span>Craft</span></div>
+              <div className="lg-logo-name">
+                Career<span>Craft</span>
+              </div>
             </div>
 
-            <h1 className="login-headline">
-              Your Career,<br/><span className="login-headline-accent">Reimagined</span>
+            <h1 className="lg-headline">
+              Your Career,
+              <br />
+              <span className="lg-headline-accent">Reimagined</span>
             </h1>
-            <p className="login-desc">
-              Predict career success, validate your resume, and discover personalized
-              job recommendations powered by AI and Machine Learning.
+            <p className="lg-desc">
+              Predict career success, validate your resume, and discover
+              personalized job recommendations powered by AI and Machine
+              Learning.
             </p>
 
-            <div className="login-features">
-              {['ML-powered career success prediction', 'NLP resume analysis & scoring', 'Personalized job recommendations', 'AI Career Advisor chatbot'].map((f, i) => (
-                <div key={i} className="login-feature">
-                  <div className="login-feature-check">
+            <div className="lg-features">
+              {[
+                "ML-powered career success prediction",
+                "NLP resume analysis & scoring",
+                "Personalized job recommendations",
+                "AI Career Advisor chatbot",
+              ].map((f, i) => (
+                <div key={i} className="lg-feature">
+                  <div className="lg-feature-check">
                     <svg width="10" height="10" viewBox="0 0 10 10" fill="none">
-                      <path d="M1.5 5L4 7.5L8.5 2.5" stroke="#63ebda" strokeWidth="1.5" strokeLinecap="round"/>
+                      <path
+                        d="M1.5 5L4 7.5L8.5 2.5"
+                        stroke="#2997ff"
+                        strokeWidth="1.6"
+                        strokeLinecap="round"
+                      />
                     </svg>
                   </div>
                   {f}
@@ -197,55 +314,116 @@ const Login = ({ setUser }) => {
           </div>
 
           {/* Auth card */}
-          <div className="login-card">
-            <div className="login-card-title">Welcome back</div>
-            <div className="login-card-sub">Sign in to continue your career journey</div>
+          <div className="lg-card">
+            <div className="lg-card-eyebrow">
+              <span className="lg-eyebrow-dot" />
+              AI-Powered Platform
+            </div>
+            <div className="lg-card-title">
+              {tab === "login" ? "Welcome back" : "Create account"}
+            </div>
+            <div className="lg-card-sub">
+              {tab === "login"
+                ? "Sign in to continue your career journey"
+                : "Join thousands building their future with AI"}
+            </div>
+            <div className="lg-divider" />
 
             {/* Tabs */}
-            <div className="login-tabs">
-              <button className={`login-tab ${tab === 'login' ? 'active' : 'inactive'}`} onClick={() => setTab('login')}>Sign In</button>
-              <button className={`login-tab ${tab === 'signup' ? 'active' : 'inactive'}`} onClick={() => setTab('signup')}>Sign Up</button>
+            <div className="lg-tabs">
+              <button
+                className={`lg-tab ${tab === "login" ? "lg-tab-active" : "lg-tab-inactive"}`}
+                onClick={() => setTab("login")}
+              >
+                Sign In
+              </button>
+              <button
+                className={`lg-tab ${tab === "signup" ? "lg-tab-active" : "lg-tab-inactive"}`}
+                onClick={() => setTab("signup")}
+              >
+                Sign Up
+              </button>
             </div>
 
             {/* Login Form */}
-            {tab === 'login' && (
+            {tab === "login" && (
               <form onSubmit={handleLogin}>
-                <div className="login-field">
-                  <label className="login-label">Email</label>
-                  <input type="email" placeholder="you@example.com" className="login-input"
-                    value={loginData.email} onChange={e => setLoginData({...loginData, email: e.target.value})} required/>
+                <div className="lg-field">
+                  <label className="lg-label">Email</label>
+                  <input
+                    type="email"
+                    placeholder="you@example.com"
+                    className="lg-input"
+                    value={loginData.email}
+                    onChange={(e) =>
+                      setLoginData({ ...loginData, email: e.target.value })
+                    }
+                    required
+                  />
                 </div>
-                <div className="login-field">
-                  <label className="login-label">Password</label>
-                  <input type="password" placeholder="••••••••" className="login-input"
-                    value={loginData.password} onChange={e => setLoginData({...loginData, password: e.target.value})} required/>
+                <div className="lg-field">
+                  <label className="lg-label">Password</label>
+                  <input
+                    type="password"
+                    placeholder="••••••••"
+                    className="lg-input"
+                    value={loginData.password}
+                    onChange={(e) =>
+                      setLoginData({ ...loginData, password: e.target.value })
+                    }
+                    required
+                  />
                 </div>
-                <button type="submit" className="login-btn" disabled={loading}>
-                  {loading ? 'Signing in...' : 'Sign In →'}
+                <button type="submit" className="lg-btn" disabled={loading}>
+                  {loading ? "Signing in…" : "Sign In"}
                 </button>
               </form>
             )}
 
             {/* Signup Form */}
-            {tab === 'signup' && (
+            {tab === "signup" && (
               <form onSubmit={handleSignup}>
-                <div className="login-field">
-                  <label className="login-label">Full Name</label>
-                  <input type="text" placeholder="John Doe" className="login-input"
-                    value={signupData.name} onChange={e => setSignupData({...signupData, name: e.target.value})} required/>
+                <div className="lg-field">
+                  <label className="lg-label">Full Name</label>
+                  <input
+                    type="text"
+                    placeholder="John Doe"
+                    className="lg-input"
+                    value={signupData.name}
+                    onChange={(e) =>
+                      setSignupData({ ...signupData, name: e.target.value })
+                    }
+                    required
+                  />
                 </div>
-                <div className="login-field">
-                  <label className="login-label">Email</label>
-                  <input type="email" placeholder="you@example.com" className="login-input"
-                    value={signupData.email} onChange={e => setSignupData({...signupData, email: e.target.value})} required/>
+                <div className="lg-field">
+                  <label className="lg-label">Email</label>
+                  <input
+                    type="email"
+                    placeholder="you@example.com"
+                    className="lg-input"
+                    value={signupData.email}
+                    onChange={(e) =>
+                      setSignupData({ ...signupData, email: e.target.value })
+                    }
+                    required
+                  />
                 </div>
-                <div className="login-field">
-                  <label className="login-label">Password</label>
-                  <input type="password" placeholder="••••••••" className="login-input"
-                    value={signupData.password} onChange={e => setSignupData({...signupData, password: e.target.value})} required/>
+                <div className="lg-field">
+                  <label className="lg-label">Password</label>
+                  <input
+                    type="password"
+                    placeholder="••••••••"
+                    className="lg-input"
+                    value={signupData.password}
+                    onChange={(e) =>
+                      setSignupData({ ...signupData, password: e.target.value })
+                    }
+                    required
+                  />
                 </div>
-                <button type="submit" className="login-btn" disabled={loading}>
-                  {loading ? 'Creating account...' : 'Create Account →'}
+                <button type="submit" className="lg-btn" disabled={loading}>
+                  {loading ? "Creating account…" : "Create Account"}
                 </button>
               </form>
             )}
