@@ -13,6 +13,55 @@ import {
   ChevronRight,
 } from "lucide-react";
 
+// ── Course thumbnail with graceful fallback ────────────────────────────────
+const COURSE_GRADIENTS = [
+  "linear-gradient(135deg,#0d1f3c 0%,#1a2a4a 100%)",
+  "linear-gradient(135deg,#16213e 0%,#1a1a2e 100%)",
+  "linear-gradient(135deg,#0f2027 0%,#2c5364 100%)",
+  "linear-gradient(135deg,#1e1e2e 0%,#2a1a3e 100%)",
+  "linear-gradient(135deg,#0a1628 0%,#1a2a1a 100%)",
+  "linear-gradient(135deg,#1a0a28 0%,#2e1a3e 100%)",
+];
+const COURSE_ICONS = [
+  "📊",
+  "🐍",
+  "🤖",
+  "📋",
+  "🎯",
+  "⚛️",
+  "☁️",
+  "🔒",
+  "🎨",
+  "📱",
+];
+
+const CourseImage = ({ src, title, index }) => {
+  const [failed, setFailed] = useState(!src);
+  const gradient = COURSE_GRADIENTS[index % COURSE_GRADIENTS.length];
+  const icon = COURSE_ICONS[index % COURSE_ICONS.length];
+
+  if (!src || failed) {
+    return (
+      <div className="jr-course-placeholder" style={{ background: gradient }}>
+        <div className="jr-course-placeholder-icon">{icon}</div>
+        <div className="jr-course-placeholder-text">
+          {title?.split(" ").slice(0, 3).join(" ") || "Course"}
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <img
+      className="jr-course-img"
+      src={src}
+      alt={title}
+      onError={() => setFailed(true)}
+    />
+  );
+};
+
+// ── Main Component ─────────────────────────────────────────────────────────
 const JobRecommendations = () => {
   const [skills, setSkills] = useState([]);
   const [skillInput, setSkillInput] = useState("");
@@ -48,8 +97,7 @@ const JobRecommendations = () => {
       handleGetJobs();
       handleGetLearningPath();
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [skills]);
+  }, [skills]); // eslint-disable-line
 
   const convertToINR = (salary) => {
     if (!salary || salary === "Not disclosed") return "Not disclosed";
@@ -508,12 +556,30 @@ const JobRecommendations = () => {
           box-shadow: var(--sh-lg);
         }
 
-        .jr-course-img-wrap { height: 140px; background: var(--bg-2); overflow: hidden; }
+        /* ── Course thumbnail — fixed ── */
+        .jr-course-img-wrap {
+          height: 140px; overflow: hidden;
+          position: relative; background: var(--bg-2);
+        }
         .jr-course-img {
           width: 100%; height: 140px; object-fit: cover;
-          transition: transform 0.35s;
+          transition: transform 0.35s; display: block;
         }
         .jr-course:hover .jr-course-img { transform: scale(1.04); }
+
+        /* Gradient placeholder shown when no image / image fails */
+        .jr-course-placeholder {
+          position: absolute; inset: 0;
+          display: flex; flex-direction: column;
+          align-items: center; justify-content: center; gap: 8px;
+        }
+        .jr-course-placeholder-icon { font-size: 32px; line-height: 1; }
+        .jr-course-placeholder-text {
+          font-size: 11px; font-weight: 500; color: rgba(255,255,255,0.45);
+          letter-spacing: 0.06em; text-transform: uppercase;
+          text-align: center; padding: 0 12px;
+          display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;
+        }
 
         .jr-course-body { padding: 14px 16px; }
         .jr-course-title {
@@ -836,23 +902,15 @@ const JobRecommendations = () => {
                               className="jr-course"
                               data-testid={`course-card-${index}`}
                             >
+                              {/* ── Thumbnail with graceful fallback ── */}
                               <div className="jr-course-img-wrap">
-                                <img
-                                  className="jr-course-img"
-                                  src={
-                                    course.thumbnail ||
-                                    "https://via.placeholder.com/400x225?text=Course"
-                                  }
-                                  alt={course.title}
-                                  onError={(e) => {
-                                    try {
-                                      e.currentTarget.onerror = null;
-                                      e.currentTarget.src =
-                                        "https://via.placeholder.com/400x225?text=Course";
-                                    } catch (_) {}
-                                  }}
+                                <CourseImage
+                                  src={course.thumbnail}
+                                  title={course.title}
+                                  index={index}
                                 />
                               </div>
+
                               <div className="jr-course-body">
                                 {course.relevance_score && (
                                   <div className="jr-rel-badge">
