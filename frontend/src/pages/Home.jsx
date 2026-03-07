@@ -73,31 +73,102 @@ const Home = ({ user }) => {
 
         *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
-        :root {
-          /* Apple dark palette */
-          --bg:       #000000;
-          --bg-1:     #0a0a0a;
-          --bg-2:     #111111;
-          --bg-3:     #1a1a1a;
-          --bg-4:     #222222;
-          --surface:  rgba(255,255,255,0.05);
-          --surface2: rgba(255,255,255,0.08);
-          --border:   rgba(255,255,255,0.08);
-          --border2:  rgba(255,255,255,0.13);
-          --border3:  rgba(255,255,255,0.2);
-          --text-1:   #f5f5f7;
-          --text-2:   #a1a1a6;
-          --text-3:   #6e6e73;
-          --text-4:   #3d3d40;
-          --blue:     #2997ff;
-          --blue-dim: rgba(41,151,255,0.15);
-          --blue-glow:rgba(41,151,255,0.08);
-          --green:    #30d158;
-          --sh-sm: 0 2px 12px rgba(0,0,0,0.4);
-          --sh-md: 0 8px 32px rgba(0,0,0,0.5);
-          --sh-lg: 0 20px 60px rgba(0,0,0,0.6);
-          --sh-xl: 0 32px 100px rgba(0,0,0,0.7);
+        /* ── Dark (default) ── */
+        :root, [data-theme="dark"] {
+          --bg:        #000000;
+          --bg-1:      #0a0a0a;
+          --bg-2:      #111111;
+          --bg-3:      #1a1a1a;
+          --bg-4:      #222222;
+          --surface:   rgba(255,255,255,0.05);
+          --surface2:  rgba(255,255,255,0.08);
+          --border:    rgba(255,255,255,0.08);
+          --border2:   rgba(255,255,255,0.13);
+          --border3:   rgba(255,255,255,0.2);
+          --text-1:    #f5f5f7;
+          --text-2:    #a1a1a6;
+          --text-3:    #6e6e73;
+          --text-4:    #3d3d40;
+          --blue:      #2997ff;
+          --blue-dim:  rgba(41,151,255,0.15);
+          --blue-glow: rgba(41,151,255,0.08);
+          --green:     #30d158;
+          --sh-sm:     0 2px 12px rgba(0,0,0,0.4);
+          --sh-md:     0 8px 32px rgba(0,0,0,0.5);
+          --sh-lg:     0 20px 60px rgba(0,0,0,0.6);
+          --sh-xl:     0 32px 100px rgba(0,0,0,0.7);
           --r-sm:6px; --r-md:12px; --r-lg:16px; --r-xl:20px; --r-2xl:28px; --r-3xl:36px;
+          /* hero glow */
+          --hero-glow: rgba(41,151,255,0.1);
+          --hero-glow-mid: rgba(41,151,255,0.03);
+          /* mockup */
+          --mockup-shadow: var(--sh-xl), 0 0 0 1px rgba(255,255,255,0.03), 0 0 80px rgba(41,151,255,0.06);
+          /* stats */
+          --stat-border-grad: var(--blue);
+          /* features */
+          --fcard-hover-bg: var(--bg-2);
+          --fcard-hover-shadow: var(--sh-lg), 0 0 0 1px rgba(255,255,255,0.04);
+          /* bars box */
+          --bars-box-bg:     var(--bg-3);
+          --bars-box-border: var(--border);
+          /* benefits */
+          --ben-border:  var(--border);
+          --ben-l-border: var(--blue);
+          /* cta */
+          --cta-bg: var(--bg-1);
+          --cta-border: var(--border);
+          --cta-glow: rgba(41,151,255,0.15);
+          --cta-glow-mid: rgba(41,151,255,0.03);
+          --cta-hairline: rgba(41,151,255,0.5);
+        }
+
+        /* ── Light ── */
+        [data-theme="light"] {
+          --bg:        #f5f7fa;
+          --bg-1:      #ffffff;
+          --bg-2:      #f0f4f8;
+          --bg-3:      #eef2f7;
+          --bg-4:      #e2e8f0;
+          --surface:   rgba(0,0,0,0.03);
+          --surface2:  rgba(0,0,0,0.05);
+          --border:    rgba(0,0,0,0.08);
+          --border2:   rgba(0,0,0,0.12);
+          --border3:   rgba(0,0,0,0.18);
+          --text-1:    #1e293b;
+          --text-2:    #64748b;
+          --text-3:    #94a3b8;
+          --text-4:    #cbd5e1;
+          --blue:      #2997ff;
+          --blue-dim:  rgba(41,151,255,0.12);
+          --blue-glow: rgba(41,151,255,0.05);
+          --green:     #22c55e;
+          --sh-sm:     0 2px 12px rgba(0,0,0,0.06);
+          --sh-md:     0 8px 32px rgba(0,0,0,0.09);
+          --sh-lg:     0 20px 60px rgba(0,0,0,0.12);
+          --sh-xl:     0 32px 100px rgba(0,0,0,0.14);
+          --r-sm:6px; --r-md:12px; --r-lg:16px; --r-xl:20px; --r-2xl:28px; --r-3xl:36px;
+          /* hero glow */
+          --hero-glow:     rgba(41,151,255,0.07);
+          --hero-glow-mid: rgba(41,151,255,0.02);
+          /* mockup */
+          --mockup-shadow: var(--sh-xl), 0 0 0 1px rgba(0,0,0,0.04);
+          /* stats */
+          --stat-border-grad: var(--blue);
+          /* features */
+          --fcard-hover-bg: var(--bg-1);
+          --fcard-hover-shadow: var(--sh-lg);
+          /* bars box */
+          --bars-box-bg:     var(--bg-3);
+          --bars-box-border: var(--border);
+          /* benefits */
+          --ben-border:  var(--border);
+          --ben-l-border: var(--blue);
+          /* cta */
+          --cta-bg: var(--bg-1);
+          --cta-border: var(--border);
+          --cta-glow: rgba(41,151,255,0.1);
+          --cta-glow-mid: rgba(41,151,255,0.02);
+          --cta-hairline: rgba(41,151,255,0.4);
         }
 
         .dk-root {
@@ -107,14 +178,15 @@ const Home = ({ user }) => {
           color: var(--text-1);
           -webkit-font-smoothing: antialiased;
           overflow-x: hidden;
+          transition: background 0.3s, color 0.3s;
         }
 
-        /* Radial top glow — Apple-style */
+        /* Radial top glow */
         .dk-root::before {
           content: '';
           position: fixed; top: -200px; left: 50%; transform: translateX(-50%);
           width: 1000px; height: 700px; border-radius: 50%;
-          background: radial-gradient(ellipse, rgba(41,151,255,0.1) 0%, rgba(41,151,255,0.03) 40%, transparent 70%);
+          background: radial-gradient(ellipse, var(--hero-glow) 0%, var(--hero-glow-mid) 40%, transparent 70%);
           pointer-events: none; z-index: 0;
         }
 
@@ -205,7 +277,7 @@ const Home = ({ user }) => {
           backdrop-filter: blur(8px);
           transition: background 0.2s, border-color 0.2s, color 0.2s, transform 0.2s;
         }
-        .dk-btn-g:hover { background: rgba(255,255,255,0.12); border-color: var(--border3); color: var(--text-1); transform: scale(1.01); }
+        .dk-btn-g:hover { background: var(--surface); border-color: var(--border3); color: var(--text-1); transform: scale(1.01); }
 
         /* Trust row */
         .dk-trust {
@@ -226,7 +298,7 @@ const Home = ({ user }) => {
           border: 1px solid var(--border);
           border-radius: var(--r-2xl);
           overflow: hidden;
-          box-shadow: var(--sh-xl), 0 0 0 1px rgba(255,255,255,0.03), 0 0 80px rgba(41,151,255,0.06);
+          box-shadow: var(--mockup-shadow);
         }
         .dk-mockup-bar {
           display: flex; align-items: center; gap: 6px;
@@ -278,7 +350,7 @@ const Home = ({ user }) => {
         }
         .dk-stat::before {
           content: ''; position: absolute; top: 0; left: 15%; right: 15%; height: 1px;
-          background: linear-gradient(90deg, transparent, var(--blue), transparent);
+          background: linear-gradient(90deg, transparent, var(--stat-border-grad), transparent);
           opacity: 0; transition: opacity 0.25s;
         }
         .dk-stat:hover { background: var(--bg-2); }
@@ -327,8 +399,8 @@ const Home = ({ user }) => {
         }
         .dk-fcard:hover {
           border-color: var(--border2);
-          background: var(--bg-2);
-          box-shadow: var(--sh-lg), 0 0 0 1px rgba(255,255,255,0.04);
+          background: var(--fcard-hover-bg);
+          box-shadow: var(--fcard-hover-shadow);
           transform: translateY(-4px);
         }
         .dk-fcard:hover::before { opacity: 1; }
@@ -379,7 +451,7 @@ const Home = ({ user }) => {
         /* Skill bars */
         .dk-bars-box {
           padding: 18px 16px;
-          background: var(--bg-3); border: 1px solid var(--border);
+          background: var(--bars-box-bg); border: 1px solid var(--bars-box-border);
           border-radius: var(--r-lg);
         }
         .dk-bars-head { display: flex; justify-content: space-between; margin-bottom: 14px; }
@@ -397,7 +469,7 @@ const Home = ({ user }) => {
         ══════════════════ */
         .dk-benefits {
           margin-bottom: 96px;
-          background: var(--bg-1); border: 1px solid var(--border);
+          background: var(--bg-1); border: 1px solid var(--ben-border);
           border-radius: var(--r-2xl); overflow: hidden;
           display: grid; grid-template-columns: 1fr 1fr;
           box-shadow: var(--sh-md);
@@ -406,14 +478,13 @@ const Home = ({ user }) => {
 
         .dk-ben-l {
           padding: 56px 48px;
-          border-right: 1px solid var(--border);
+          border-right: 1px solid var(--ben-border);
           position: relative;
         }
-        @media(max-width:768px){ .dk-ben-l { border-right: none; border-bottom: 1px solid var(--border); padding: 40px 32px; } }
-        /* Left accent line */
+        @media(max-width:768px){ .dk-ben-l { border-right: none; border-bottom: 1px solid var(--ben-border); padding: 40px 32px; } }
         .dk-ben-l::before {
           content: ''; position: absolute; top: 0; left: 0; bottom: 0; width: 1px;
-          background: linear-gradient(180deg, transparent 0%, var(--blue) 40%, transparent 100%);
+          background: linear-gradient(180deg, transparent 0%, var(--ben-l-border) 40%, transparent 100%);
           opacity: 0.4;
         }
         .dk-ben-h {
@@ -447,22 +518,20 @@ const Home = ({ user }) => {
         ══════════════════ */
         .dk-cta {
           margin-bottom: 80px;
-          background: var(--bg-1); border: 1px solid var(--border);
+          background: var(--cta-bg); border: 1px solid var(--cta-border);
           border-radius: var(--r-2xl); padding: 88px 48px; text-align: center;
           position: relative; overflow: hidden;
           box-shadow: var(--sh-lg);
         }
-        /* Top glow */
         .dk-cta::before {
           content: ''; position: absolute; top: -150px; left: 50%; transform: translateX(-50%);
           width: 700px; height: 500px; border-radius: 50%;
-          background: radial-gradient(ellipse, rgba(41,151,255,0.15) 0%, rgba(41,151,255,0.03) 50%, transparent 70%);
+          background: radial-gradient(ellipse, var(--cta-glow) 0%, var(--cta-glow-mid) 50%, transparent 70%);
           pointer-events: none;
         }
-        /* Top hairline */
         .dk-cta::after {
           content: ''; position: absolute; top: -1px; left: 20%; right: 20%; height: 1px;
-          background: linear-gradient(90deg, transparent, rgba(41,151,255,0.5), transparent);
+          background: linear-gradient(90deg, transparent, var(--cta-hairline), transparent);
         }
         .dk-cta-ey {
           font-size: 11.5px; font-weight: 500; color: var(--text-3);

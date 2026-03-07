@@ -2,13 +2,19 @@ import React from "react";
 import ReactDOM from "react-dom/client";
 import App from "./App";
 import { GoogleOAuthProvider } from "@react-oauth/google";
+import { ThemeProvider } from "./context/ThemeContext";
 
 const GOOGLE_CLIENT_ID = process.env.REACT_APP_GOOGLE_CLIENT_ID || "";
 
 ReactDOM.createRoot(document.getElementById("root")).render(
   <React.StrictMode>
     <GoogleOAuthProvider clientId={GOOGLE_CLIENT_ID}>
-      <App />
+      <ThemeProvider>
+        {" "}
+        {/* ← ADD */}
+        <App />
+      </ThemeProvider>{" "}
+      {/* ← ADD */}
     </GoogleOAuthProvider>
   </React.StrictMode>,
 );

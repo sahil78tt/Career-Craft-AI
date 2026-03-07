@@ -10,10 +10,8 @@ import {
   Clock,
   X,
   ArrowRight,
-  ChevronRight,
 } from "lucide-react";
 
-// ── Course thumbnail with graceful fallback ────────────────────────────────
 const COURSE_GRADIENTS = [
   "linear-gradient(135deg,#0d1f3c 0%,#1a2a4a 100%)",
   "linear-gradient(135deg,#16213e 0%,#1a1a2e 100%)",
@@ -39,7 +37,6 @@ const CourseImage = ({ src, title, index }) => {
   const [failed, setFailed] = useState(!src);
   const gradient = COURSE_GRADIENTS[index % COURSE_GRADIENTS.length];
   const icon = COURSE_ICONS[index % COURSE_ICONS.length];
-
   if (!src || failed) {
     return (
       <div className="jr-course-placeholder" style={{ background: gradient }}>
@@ -50,7 +47,6 @@ const CourseImage = ({ src, title, index }) => {
       </div>
     );
   }
-
   return (
     <img
       className="jr-course-img"
@@ -61,7 +57,6 @@ const CourseImage = ({ src, title, index }) => {
   );
 };
 
-// ── Main Component ─────────────────────────────────────────────────────────
 const JobRecommendations = () => {
   const [skills, setSkills] = useState([]);
   const [skillInput, setSkillInput] = useState("");
@@ -72,7 +67,6 @@ const JobRecommendations = () => {
   const [autoLoaded, setAutoLoaded] = useState(false);
   const [activeTab, setActiveTab] = useState("jobs");
 
-  // ── ORIGINAL LOGIC UNTOUCHED ──────────────────────────────────────────────
   useEffect(() => {
     const loadFromResume = () => {
       try {
@@ -134,9 +128,7 @@ const JobRecommendations = () => {
       setSkillInput("");
     }
   };
-
-  const removeSkill = (skillToRemove) =>
-    setSkills(skills.filter((s) => s !== skillToRemove));
+  const removeSkill = (s) => setSkills(skills.filter((x) => x !== s));
 
   const handleGetJobs = async () => {
     if (skills.length === 0) {
@@ -185,223 +177,193 @@ const JobRecommendations = () => {
     "ml_engineer",
   ];
 
-  // ── UI ────────────────────────────────────────────────────────────────────
   return (
     <>
       <style>{`
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
-
         *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
-        :root {
-          --bg:       #000000;
-          --bg-1:     #0a0a0a;
-          --bg-2:     #111111;
-          --bg-3:     #1a1a1a;
-          --bg-4:     #222222;
-          --border:   rgba(255,255,255,0.08);
-          --border2:  rgba(255,255,255,0.13);
-          --border3:  rgba(255,255,255,0.2);
-          --text-1:   #f5f5f7;
-          --text-2:   #a1a1a6;
-          --text-3:   #6e6e73;
-          --text-4:   #3d3d40;
-          --blue:     #2997ff;
-          --blue-dim: rgba(41,151,255,0.12);
-          --blue-glow:rgba(41,151,255,0.07);
-          --green:    #30d158;
-          --green-dim:rgba(48,209,88,0.1);
-          --amber:    #ff9f0a;
-          --amber-dim:rgba(255,159,10,0.1);
-          --purple:   #bf5af2;
-          --purple-dim:rgba(191,90,242,0.1);
-          --sh-sm: 0 2px 12px rgba(0,0,0,0.4);
-          --sh-md: 0 8px 32px rgba(0,0,0,0.5);
-          --sh-lg: 0 20px 60px rgba(0,0,0,0.6);
-          --r-sm:8px; --r-md:12px; --r-lg:16px; --r-xl:20px; --r-2xl:28px;
+        /* ── Dark (default) ── */
+        :root, [data-theme="dark"] {
+          --jr-bg:        #000000;
+          --jr-bg-1:      #0a0a0a;
+          --jr-bg-2:      #111111;
+          --jr-bg-3:      #1a1a1a;
+          --jr-bg-4:      #222222;
+          --jr-border:    rgba(255,255,255,0.08);
+          --jr-border2:   rgba(255,255,255,0.13);
+          --jr-border3:   rgba(255,255,255,0.2);
+          --jr-text-1:    #f5f5f7;
+          --jr-text-2:    #a1a1a6;
+          --jr-text-3:    #6e6e73;
+          --jr-text-4:    #3d3d40;
+          --jr-blue:      #2997ff;
+          --jr-blue-dim:  rgba(41,151,255,0.12);
+          --jr-blue-glow: rgba(41,151,255,0.07);
+          --jr-green:     #30d158;
+          --jr-green-dim: rgba(48,209,88,0.1);
+          --jr-amber:     #ff9f0a;
+          --jr-amber-dim: rgba(255,159,10,0.1);
+          --jr-purple:    #bf5af2;
+          --jr-purple-dim:rgba(191,90,242,0.1);
+          --jr-sh-sm:     0 2px 12px rgba(0,0,0,0.4);
+          --jr-sh-md:     0 8px 32px rgba(0,0,0,0.5);
+          --jr-sh-lg:     0 20px 60px rgba(0,0,0,0.6);
+          --jr-select-opt-bg: #1a1a1a;
+          --jr-glow-radial: rgba(41,151,255,0.08);
+          --jr-card-hover-border: rgba(255,255,255,0.13);
+          --jr-tab-active-bg: #222222;
+          --jr-tab-active-border: rgba(255,255,255,0.13);
+        }
+
+        /* ── Light ── */
+        [data-theme="light"] {
+          --jr-bg:        #f5f7fa;
+          --jr-bg-1:      #ffffff;
+          --jr-bg-2:      #f8faff;
+          --jr-bg-3:      #eef2f7;
+          --jr-bg-4:      #e2e8f0;
+          --jr-border:    rgba(0,0,0,0.08);
+          --jr-border2:   rgba(0,0,0,0.12);
+          --jr-border3:   rgba(0,0,0,0.18);
+          --jr-text-1:    #1e293b;
+          --jr-text-2:    #64748b;
+          --jr-text-3:    #94a3b8;
+          --jr-text-4:    #cbd5e1;
+          --jr-blue:      #2997ff;
+          --jr-blue-dim:  rgba(41,151,255,0.12);
+          --jr-blue-glow: rgba(41,151,255,0.05);
+          --jr-green:     #22c55e;
+          --jr-green-dim: rgba(34,197,94,0.1);
+          --jr-amber:     #f59e0b;
+          --jr-amber-dim: rgba(245,158,11,0.1);
+          --jr-purple:    #a855f7;
+          --jr-purple-dim:rgba(168,85,247,0.08);
+          --jr-sh-sm:     0 2px 12px rgba(0,0,0,0.06);
+          --jr-sh-md:     0 8px 32px rgba(0,0,0,0.1);
+          --jr-sh-lg:     0 20px 60px rgba(0,0,0,0.12);
+          --jr-select-opt-bg: #ffffff;
+          --jr-glow-radial: rgba(41,151,255,0.05);
+          --jr-card-hover-border: rgba(0,0,0,0.12);
+          --jr-tab-active-bg: #eef2f7;
+          --jr-tab-active-border: rgba(0,0,0,0.1);
         }
 
         .jr-root {
           min-height: 100vh;
-          background: var(--bg);
+          background: var(--jr-bg);
           font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'SF Pro Display', sans-serif;
-          color: var(--text-1);
+          color: var(--jr-text-1);
           -webkit-font-smoothing: antialiased;
-          overflow-x: hidden;
-          position: relative;
+          overflow-x: hidden; position: relative;
           padding: 88px 32px 100px;
         }
         @media(max-width:768px){ .jr-root { padding: 80px 20px 80px; } }
 
-        /* Top radial glow */
         .jr-root::before {
-          content: '';
-          position: fixed; top: -200px; left: 50%; transform: translateX(-50%);
+          content: ''; position: fixed; top: -200px; left: 50%; transform: translateX(-50%);
           width: 900px; height: 600px; border-radius: 50%;
-          background: radial-gradient(ellipse, rgba(41,151,255,0.08) 0%, rgba(41,151,255,0.02) 45%, transparent 70%);
+          background: radial-gradient(ellipse, var(--jr-glow-radial) 0%, transparent 70%);
           pointer-events: none; z-index: 0;
         }
 
-        .jr-inner {
-          max-width: 1100px; margin: 0 auto;
-          position: relative; z-index: 1;
-        }
+        .jr-inner { max-width: 1100px; margin: 0 auto; position: relative; z-index: 1; }
 
-        /* ── Header ── */
         .jr-header { margin-bottom: 52px; animation: jrFade 0.8s ease both; }
 
         .jr-eyebrow {
           display: inline-flex; align-items: center; gap: 8px;
-          font-size: 11.5px; font-weight: 500; color: var(--blue);
+          font-size: 11.5px; font-weight: 500; color: var(--jr-blue);
           letter-spacing: 0.08em; text-transform: uppercase; margin-bottom: 18px;
         }
         .jr-eyebrow-dot {
           width: 5px; height: 5px; border-radius: 50%;
-          background: var(--blue); box-shadow: 0 0 8px var(--blue);
+          background: var(--jr-blue); box-shadow: 0 0 8px var(--jr-blue);
           animation: jrPulse 2.5s ease-in-out infinite;
         }
         @keyframes jrPulse { 0%,100%{opacity:1;transform:scale(1)} 50%{opacity:0.4;transform:scale(0.7)} }
 
-        .jr-title {
-          font-size: clamp(34px, 5vw, 60px);
-          font-weight: 700; letter-spacing: -0.042em; line-height: 1.0;
-          color: var(--text-1); margin-bottom: 16px;
-        }
-        .jr-title-em {
-          background: linear-gradient(135deg, #2997ff 0%, #5ac8fa 100%);
-          -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
-        }
-        .jr-sub {
-          font-size: 16px; color: var(--text-2); letter-spacing: -0.01em;
-          line-height: 1.65; max-width: 440px;
-        }
+        .jr-title { font-size: clamp(34px, 5vw, 60px); font-weight: 700; letter-spacing: -0.042em; line-height: 1.0; color: var(--jr-text-1); margin-bottom: 16px; }
+        .jr-title-em { background: linear-gradient(135deg, #2997ff 0%, #5ac8fa 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+        .jr-sub { font-size: 16px; color: var(--jr-text-2); letter-spacing: -0.01em; line-height: 1.65; max-width: 440px; }
 
-        /* ── Cards ── */
         .jr-card {
-          background: var(--bg-1);
-          border: 1px solid var(--border);
-          border-radius: var(--r-xl);
-          padding: 24px 26px;
-          margin-bottom: 16px;
-          transition: border-color 0.25s;
-          animation: jrFade 0.8s 0.1s ease both;
+          background: var(--jr-bg-1); border: 1px solid var(--jr-border);
+          border-radius: 20px; padding: 24px 26px; margin-bottom: 16px;
+          transition: border-color 0.25s; animation: jrFade 0.8s 0.1s ease both;
         }
-        .jr-card:hover { border-color: var(--border2); }
+        .jr-card:hover { border-color: var(--jr-card-hover-border); }
+        .jr-card-title { font-size: 15px; font-weight: 600; letter-spacing: -0.02em; color: var(--jr-text-1); margin-bottom: 4px; display: flex; align-items: center; gap: 8px; }
+        .jr-card-sub { font-size: 13px; color: var(--jr-text-3); letter-spacing: -0.01em; margin-bottom: 18px; }
 
-        .jr-card-label {
-          font-size: 11px; font-weight: 500; color: var(--text-3);
-          letter-spacing: 0.08em; text-transform: uppercase; margin-bottom: 4px;
-        }
-        .jr-card-title {
-          font-size: 15px; font-weight: 600; letter-spacing: -0.02em;
-          color: var(--text-1); margin-bottom: 4px;
-          display: flex; align-items: center; gap: 8px;
-        }
-        .jr-card-sub {
-          font-size: 13px; color: var(--text-3); letter-spacing: -0.01em;
-          margin-bottom: 18px;
-        }
-
-        /* ── Skills input ── */
-        .jr-skill-row {
-          display: flex; gap: 10px; margin-bottom: 14px;
-        }
+        .jr-skill-row { display: flex; gap: 10px; margin-bottom: 14px; }
         .jr-skill-input {
-          flex: 1; padding: 11px 14px;
-          border-radius: var(--r-md); font-size: 14px;
-          background: var(--bg-3); border: 1px solid var(--border);
-          color: var(--text-1); outline: none;
+          flex: 1; padding: 11px 14px; border-radius: 12px; font-size: 14px;
+          background: var(--jr-bg-3); border: 1px solid var(--jr-border);
+          color: var(--jr-text-1); outline: none;
           font-family: 'Inter', sans-serif; letter-spacing: -0.01em;
           transition: border-color 0.2s, background 0.2s, box-shadow 0.2s;
         }
-        .jr-skill-input::placeholder { color: var(--text-4); }
-        .jr-skill-input:focus {
-          border-color: var(--blue);
-          background: var(--bg-2);
-          box-shadow: 0 0 0 3px rgba(41,151,255,0.12);
-        }
+        .jr-skill-input::placeholder { color: var(--jr-text-4); }
+        .jr-skill-input:focus { border-color: var(--jr-blue); background: var(--jr-bg-2); box-shadow: 0 0 0 3px rgba(41,151,255,0.12); }
+
         .jr-add-btn {
-          padding: 11px 20px; border-radius: var(--r-md);
-          border: 1px solid var(--border2);
-          background: var(--bg-3);
-          color: var(--text-1); font-size: 13px; font-weight: 500;
-          cursor: pointer; font-family: 'Inter', sans-serif;
-          white-space: nowrap; letter-spacing: -0.01em;
+          padding: 11px 20px; border-radius: 12px; border: 1px solid var(--jr-border2);
+          background: var(--jr-bg-3); color: var(--jr-text-1); font-size: 13px; font-weight: 500;
+          cursor: pointer; font-family: 'Inter', sans-serif; white-space: nowrap; letter-spacing: -0.01em;
           transition: background 0.2s, border-color 0.2s, color 0.2s;
         }
-        .jr-add-btn:hover { background: var(--blue-dim); border-color: rgba(41,151,255,0.3); color: var(--blue); }
+        .jr-add-btn:hover { background: var(--jr-blue-dim); border-color: rgba(41,151,255,0.3); color: var(--jr-blue); }
 
         .jr-skills-list { display: flex; flex-wrap: wrap; gap: 7px; }
         .jr-skill-chip {
-          display: inline-flex; align-items: center; gap: 6px;
-          padding: 5px 11px; border-radius: var(--r-sm);
-          background: var(--bg-3); border: 1px solid var(--border2);
-          color: var(--text-2); font-size: 12px; font-weight: 400;
-          letter-spacing: -0.01em;
+          display: inline-flex; align-items: center; gap: 6px; padding: 5px 11px; border-radius: 8px;
+          background: var(--jr-bg-3); border: 1px solid var(--jr-border2); color: var(--jr-text-2);
+          font-size: 12px; font-weight: 400; letter-spacing: -0.01em;
         }
-        .jr-skill-remove {
-          display: flex; align-items: center; cursor: pointer;
-          color: var(--text-4); background: none; border: none; padding: 0;
-          transition: color 0.2s;
-        }
+        .jr-skill-remove { display: flex; align-items: center; cursor: pointer; color: var(--jr-text-4); background: none; border: none; padding: 0; transition: color 0.2s; }
         .jr-skill-remove:hover { color: #ff453a; }
 
-        /* ── Tabs ── */
         .jr-tabs {
-          display: flex; background: var(--bg-2);
-          border: 1px solid var(--border);
-          border-radius: var(--r-lg); padding: 4px; margin-bottom: 24px;
-          gap: 4px; animation: jrFade 0.8s 0.14s ease both;
+          display: flex; background: var(--jr-bg-2); border: 1px solid var(--jr-border);
+          border-radius: 16px; padding: 4px; margin-bottom: 24px; gap: 4px;
+          animation: jrFade 0.8s 0.14s ease both;
         }
         .jr-tab {
           flex: 1; display: flex; align-items: center; justify-content: center; gap: 7px;
-          padding: 11px; border-radius: var(--r-md);
-          font-size: 13px; font-weight: 500; cursor: pointer;
-          border: none; font-family: 'Inter', sans-serif; letter-spacing: -0.01em;
-          transition: background 0.2s, color 0.2s;
+          padding: 11px; border-radius: 12px; font-size: 13px; font-weight: 500; cursor: pointer;
+          border: none; font-family: 'Inter', sans-serif; letter-spacing: -0.01em; transition: background 0.2s, color 0.2s;
         }
-        .jr-tab.active {
-          background: var(--bg-4); color: var(--text-1);
-          border: 1px solid var(--border2);
-        }
-        .jr-tab.inactive { background: transparent; color: var(--text-3); }
-        .jr-tab.inactive:hover { color: var(--text-2); }
+        .jr-tab.active { background: var(--jr-tab-active-bg); color: var(--jr-text-1); border: 1px solid var(--jr-tab-active-border); }
+        .jr-tab.inactive { background: transparent; color: var(--jr-text-3); }
+        .jr-tab.inactive:hover { color: var(--jr-text-2); }
 
-        /* ── Fetch / Action buttons ── */
         .jr-fetch-btn {
           display: flex; align-items: center; justify-content: center; gap: 8px;
-          margin: 0 auto 28px; padding: 13px 32px;
-          border-radius: 980px; border: none;
-          font-size: 14px; font-weight: 500; cursor: pointer;
-          background: var(--blue); color: #fff;
+          margin: 0 auto 28px; padding: 13px 32px; border-radius: 980px; border: none;
+          font-size: 14px; font-weight: 500; cursor: pointer; background: var(--jr-blue); color: #fff;
           font-family: 'Inter', sans-serif; letter-spacing: -0.01em;
-          transition: opacity 0.2s, transform 0.2s;
-          box-shadow: 0 0 24px rgba(41,151,255,0.2);
+          transition: opacity 0.2s, transform 0.2s; box-shadow: 0 0 24px rgba(41,151,255,0.2);
         }
         .jr-fetch-btn:hover:not(:disabled) { opacity: 0.88; transform: scale(1.01); }
         .jr-fetch-btn:disabled { opacity: 0.38; cursor: not-allowed; }
 
         .jr-gen-btn {
-          width: 100%; padding: 13px; border-radius: 980px;
-          border: none; font-size: 14px; font-weight: 500; cursor: pointer;
-          background: var(--blue); color: #fff;
+          width: 100%; padding: 13px; border-radius: 980px; border: none;
+          font-size: 14px; font-weight: 500; cursor: pointer; background: var(--jr-blue); color: #fff;
           font-family: 'Inter', sans-serif; letter-spacing: -0.01em;
-          transition: opacity 0.2s, transform 0.2s;
-          box-shadow: 0 0 24px rgba(41,151,255,0.18);
+          transition: opacity 0.2s, transform 0.2s; box-shadow: 0 0 24px rgba(41,151,255,0.18);
         }
         .jr-gen-btn:hover:not(:disabled) { opacity: 0.88; transform: scale(1.01); }
         .jr-gen-btn:disabled { opacity: 0.38; cursor: not-allowed; }
 
-        /* ── Jobs grid ── */
-        .jr-jobs-grid {
-          display: grid; gap: 12px;
-        }
+        .jr-jobs-grid { display: grid; gap: 12px; }
         @media(min-width:768px){ .jr-jobs-grid { grid-template-columns: 1fr 1fr; } }
         @media(min-width:1024px){ .jr-jobs-grid { grid-template-columns: 1fr 1fr 1fr; } }
 
         .jr-job {
-          background: var(--bg-1); border: 1px solid var(--border);
-          border-radius: var(--r-xl); padding: 20px 22px;
+          background: var(--jr-bg-1); border: 1px solid var(--jr-border);
+          border-radius: 20px; padding: 20px 22px;
           cursor: pointer; text-decoration: none; display: block;
           transition: border-color 0.25s, transform 0.28s cubic-bezier(.22,1,.36,1), box-shadow 0.28s;
           position: relative; overflow: hidden;
@@ -411,219 +373,92 @@ const JobRecommendations = () => {
           background: linear-gradient(90deg, transparent, rgba(41,151,255,0.5), transparent);
           opacity: 0; transition: opacity 0.25s;
         }
-        .jr-job:hover {
-          border-color: var(--border2);
-          transform: translateY(-4px);
-          box-shadow: var(--sh-lg);
-        }
+        .jr-job:hover { border-color: var(--jr-border2); transform: translateY(-4px); box-shadow: var(--jr-sh-lg); }
         .jr-job:hover::before { opacity: 1; }
 
-        .jr-job-top {
-          display: flex; align-items: flex-start; justify-content: space-between;
-          gap: 10px; margin-bottom: 14px;
-        }
-        .jr-job-title {
-          font-size: 14px; font-weight: 600; letter-spacing: -0.018em;
-          color: var(--text-1); margin-bottom: 3px;
-        }
-        .jr-job-company { font-size: 12.5px; color: var(--text-3); letter-spacing: -0.01em; }
-
-        .jr-match {
-          padding: 4px 10px; border-radius: 999px; flex-shrink: 0;
-          background: var(--green-dim); border: 1px solid rgba(48,209,88,0.2);
-          color: var(--green); font-size: 11px; font-weight: 600; white-space: nowrap;
-        }
-
-        .jr-job-meta {
-          display: flex; align-items: center; gap: 6px;
-          font-size: 12px; color: var(--text-3); margin-bottom: 7px;
-          letter-spacing: -0.01em;
-        }
-        .jr-job-meta svg { color: var(--text-4); flex-shrink: 0; }
-
-        .jr-job-skills {
-          font-size: 12px; color: var(--text-3); margin-bottom: 16px;
-          line-height: 1.55; letter-spacing: -0.01em;
-        }
-        .jr-skills-lbl {
-          font-size: 10px; font-weight: 500; color: var(--text-4);
-          text-transform: uppercase; letter-spacing: 0.06em;
-        }
+        .jr-job-top { display: flex; align-items: flex-start; justify-content: space-between; gap: 10px; margin-bottom: 14px; }
+        .jr-job-title { font-size: 14px; font-weight: 600; letter-spacing: -0.018em; color: var(--jr-text-1); margin-bottom: 3px; }
+        .jr-job-company { font-size: 12.5px; color: var(--jr-text-3); letter-spacing: -0.01em; }
+        .jr-match { padding: 4px 10px; border-radius: 999px; flex-shrink: 0; background: var(--jr-green-dim); border: 1px solid rgba(48,209,88,0.2); color: var(--jr-green); font-size: 11px; font-weight: 600; white-space: nowrap; }
+        .jr-job-meta { display: flex; align-items: center; gap: 6px; font-size: 12px; color: var(--jr-text-3); margin-bottom: 7px; letter-spacing: -0.01em; }
+        .jr-job-meta svg { color: var(--jr-text-4); flex-shrink: 0; }
+        .jr-job-skills { font-size: 12px; color: var(--jr-text-3); margin-bottom: 16px; line-height: 1.55; letter-spacing: -0.01em; }
+        .jr-skills-lbl { font-size: 10px; font-weight: 500; color: var(--jr-text-4); text-transform: uppercase; letter-spacing: 0.06em; }
 
         .jr-apply-btn {
-          width: 100%; padding: 9px 14px;
-          border-radius: var(--r-md); border: 1px solid var(--border2);
-          background: var(--bg-3); color: var(--text-2);
-          font-size: 13px; font-weight: 500; cursor: pointer;
-          font-family: 'Inter', sans-serif; letter-spacing: -0.01em;
+          width: 100%; padding: 9px 14px; border-radius: 12px; border: 1px solid var(--jr-border2);
+          background: var(--jr-bg-3); color: var(--jr-text-2); font-size: 13px; font-weight: 500;
+          cursor: pointer; font-family: 'Inter', sans-serif; letter-spacing: -0.01em;
           transition: background 0.2s, border-color 0.2s, color 0.2s;
           display: flex; align-items: center; justify-content: center; gap: 6px;
         }
-        .jr-apply-btn:hover { background: var(--blue-dim); border-color: rgba(41,151,255,0.3); color: var(--blue); }
+        .jr-apply-btn:hover { background: var(--jr-blue-dim); border-color: rgba(41,151,255,0.3); color: var(--jr-blue); }
 
-        /* ── Roles grid ── */
-        .jr-roles-grid {
-          display: grid; grid-template-columns: repeat(2,1fr);
-          gap: 8px; margin-bottom: 18px;
-        }
+        .jr-roles-grid { display: grid; grid-template-columns: repeat(2,1fr); gap: 8px; margin-bottom: 18px; }
         @media(min-width:768px){ .jr-roles-grid { grid-template-columns: repeat(3,1fr); } }
-
         .jr-role-btn {
-          padding: 11px 14px; border-radius: var(--r-md);
-          border: 1px solid var(--border); background: var(--bg-2);
-          color: var(--text-3); font-size: 13px; font-weight: 400;
-          cursor: pointer; font-family: 'Inter', sans-serif;
-          letter-spacing: -0.01em; text-align: center;
+          padding: 11px 14px; border-radius: 12px; border: 1px solid var(--jr-border);
+          background: var(--jr-bg-2); color: var(--jr-text-3); font-size: 13px; font-weight: 400;
+          cursor: pointer; font-family: 'Inter', sans-serif; letter-spacing: -0.01em; text-align: center;
           transition: background 0.2s, border-color 0.2s, color 0.2s;
         }
-        .jr-role-btn.active {
-          background: var(--blue-dim); border-color: rgba(41,151,255,0.3); color: var(--blue); font-weight: 500;
-        }
-        .jr-role-btn:hover:not(.active) { border-color: var(--border2); color: var(--text-2); }
+        .jr-role-btn.active { background: var(--jr-blue-dim); border-color: rgba(41,151,255,0.3); color: var(--jr-blue); font-weight: 500; }
+        .jr-role-btn:hover:not(.active) { border-color: var(--jr-border2); color: var(--jr-text-2); }
 
-        /* ── Learning path ── */
         .jr-roadmap { margin-bottom: 16px; }
-        .jr-roadmap-title {
-          font-size: 14px; font-weight: 600; letter-spacing: -0.02em;
-          color: var(--text-1); margin-bottom: 16px;
-          display: flex; align-items: center; gap: 8px;
-        }
-
-        .jr-roadmap-step {
-          display: flex; gap: 14px; margin-bottom: 10px; align-items: flex-start;
-        }
+        .jr-roadmap-title { font-size: 14px; font-weight: 600; letter-spacing: -0.02em; color: var(--jr-text-1); margin-bottom: 16px; display: flex; align-items: center; gap: 8px; }
+        .jr-roadmap-step { display: flex; gap: 14px; margin-bottom: 10px; align-items: flex-start; }
         .jr-step-circle {
           width: 28px; height: 28px; border-radius: 50%; flex-shrink: 0;
-          background: var(--blue-dim); border: 1px solid rgba(41,151,255,0.25);
-          color: var(--blue); font-size: 11px; font-weight: 600;
-          display: flex; align-items: center; justify-content: center;
-          margin-top: 2px;
+          background: var(--jr-blue-dim); border: 1px solid rgba(41,151,255,0.25);
+          color: var(--jr-blue); font-size: 11px; font-weight: 600;
+          display: flex; align-items: center; justify-content: center; margin-top: 2px;
         }
-        .jr-step-text {
-          font-size: 13px; color: var(--text-2); line-height: 1.65;
-          padding-top: 4px; letter-spacing: -0.01em;
-        }
+        .jr-step-text { font-size: 13px; color: var(--jr-text-2); line-height: 1.65; padding-top: 4px; letter-spacing: -0.01em; }
 
-        /* ── Gap analysis ── */
         .jr-gap-section { margin-bottom: 16px; }
-        .jr-gap-label {
-          font-size: 10.5px; font-weight: 500; color: var(--text-3);
-          text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 10px;
-        }
-
-        .jr-skill-tag {
-          display: inline-flex; padding: 4px 10px; border-radius: var(--r-sm);
-          background: var(--blue-dim); border: 1px solid rgba(41,151,255,0.2);
-          color: var(--blue); font-size: 11.5px; font-weight: 500; margin: 3px;
-          letter-spacing: -0.01em;
-        }
-        .jr-gap-tag {
-          display: inline-flex; padding: 4px 10px; border-radius: var(--r-sm);
-          background: var(--amber-dim); border: 1px solid rgba(255,159,10,0.2);
-          color: var(--amber); font-size: 11.5px; font-weight: 500; margin: 3px;
-          letter-spacing: -0.01em;
-        }
-
+        .jr-gap-label { font-size: 10.5px; font-weight: 500; color: var(--jr-text-3); text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 10px; }
+        .jr-skill-tag { display: inline-flex; padding: 4px 10px; border-radius: 8px; background: var(--jr-blue-dim); border: 1px solid rgba(41,151,255,0.2); color: var(--jr-blue); font-size: 11.5px; font-weight: 500; margin: 3px; letter-spacing: -0.01em; }
+        .jr-gap-tag { display: inline-flex; padding: 4px 10px; border-radius: 8px; background: var(--jr-amber-dim); border: 1px solid rgba(255,159,10,0.2); color: var(--jr-amber); font-size: 11.5px; font-weight: 500; margin: 3px; letter-spacing: -0.01em; }
         .jr-timeline {
-          display: flex; align-items: center; gap: 10px;
-          padding: 12px 16px; border-radius: var(--r-md);
-          background: var(--bg-2); border: 1px solid var(--border);
-          margin-top: 14px;
+          display: flex; align-items: center; gap: 10px; padding: 12px 16px; border-radius: 12px;
+          background: var(--jr-bg-2); border: 1px solid var(--jr-border); margin-top: 14px;
         }
-        .jr-timeline-text {
-          font-size: 13px; color: var(--text-2); letter-spacing: -0.01em;
-        }
-        .jr-timeline-text strong { color: var(--blue); font-weight: 600; }
+        .jr-timeline-text { font-size: 13px; color: var(--jr-text-2); letter-spacing: -0.01em; }
+        .jr-timeline-text strong { color: var(--jr-blue); font-weight: 600; }
 
-        /* ── Courses grid ── */
-        .jr-courses-head {
-          font-size: 15px; font-weight: 600; letter-spacing: -0.02em;
-          color: var(--text-1); margin-bottom: 14px;
-        }
+        .jr-courses-head { font-size: 15px; font-weight: 600; letter-spacing: -0.02em; color: var(--jr-text-1); margin-bottom: 14px; }
         .jr-courses-grid { display: grid; gap: 12px; }
         @media(min-width:768px){ .jr-courses-grid { grid-template-columns: 1fr 1fr; } }
         @media(min-width:1024px){ .jr-courses-grid { grid-template-columns: 1fr 1fr 1fr; } }
 
         .jr-course {
-          border-radius: var(--r-xl); overflow: hidden;
-          background: var(--bg-1); border: 1px solid var(--border);
+          border-radius: 20px; overflow: hidden; background: var(--jr-bg-1); border: 1px solid var(--jr-border);
           text-decoration: none; display: block;
           transition: border-color 0.25s, transform 0.28s cubic-bezier(.22,1,.36,1), box-shadow 0.28s;
         }
-        .jr-course:hover {
-          border-color: var(--border2);
-          transform: translateY(-4px);
-          box-shadow: var(--sh-lg);
-        }
-
-        /* ── Course thumbnail — fixed ── */
-        .jr-course-img-wrap {
-          height: 140px; overflow: hidden;
-          position: relative; background: var(--bg-2);
-        }
-        .jr-course-img {
-          width: 100%; height: 140px; object-fit: cover;
-          transition: transform 0.35s; display: block;
-        }
+        .jr-course:hover { border-color: var(--jr-border2); transform: translateY(-4px); box-shadow: var(--jr-sh-lg); }
+        .jr-course-img-wrap { height: 140px; overflow: hidden; position: relative; background: var(--jr-bg-2); }
+        .jr-course-img { width: 100%; height: 140px; object-fit: cover; transition: transform 0.35s; display: block; }
         .jr-course:hover .jr-course-img { transform: scale(1.04); }
-
-        /* Gradient placeholder shown when no image / image fails */
-        .jr-course-placeholder {
-          position: absolute; inset: 0;
-          display: flex; flex-direction: column;
-          align-items: center; justify-content: center; gap: 8px;
-        }
+        .jr-course-placeholder { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 8px; }
         .jr-course-placeholder-icon { font-size: 32px; line-height: 1; }
-        .jr-course-placeholder-text {
-          font-size: 11px; font-weight: 500; color: rgba(255,255,255,0.45);
-          letter-spacing: 0.06em; text-transform: uppercase;
-          text-align: center; padding: 0 12px;
-          display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;
-        }
-
+        .jr-course-placeholder-text { font-size: 11px; font-weight: 500; color: rgba(255,255,255,0.45); letter-spacing: 0.06em; text-transform: uppercase; text-align: center; padding: 0 12px; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
         .jr-course-body { padding: 14px 16px; }
-        .jr-course-title {
-          font-size: 13px; font-weight: 500; color: var(--text-1);
-          margin-bottom: 10px; letter-spacing: -0.01em;
-          display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical;
-          overflow: hidden; line-height: 1.5;
-          transition: color 0.2s;
-        }
-        .jr-course:hover .jr-course-title { color: var(--blue); }
-        .jr-course-footer {
-          display: flex; justify-content: space-between; align-items: center;
-        }
-        .jr-course-platform { font-size: 11.5px; color: var(--text-3); }
-        .jr-course-price { font-size: 13px; font-weight: 600; color: var(--green); }
+        .jr-course-title { font-size: 13px; font-weight: 500; color: var(--jr-text-1); margin-bottom: 10px; letter-spacing: -0.01em; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; line-height: 1.5; transition: color 0.2s; }
+        .jr-course:hover .jr-course-title { color: var(--jr-blue); }
+        .jr-course-footer { display: flex; justify-content: space-between; align-items: center; }
+        .jr-course-platform { font-size: 11.5px; color: var(--jr-text-3); }
+        .jr-course-price { font-size: 13px; font-weight: 600; color: var(--jr-green); }
+        .jr-rel-badge { display: inline-flex; font-size: 10.5px; padding: 3px 8px; border-radius: 999px; margin-bottom: 8px; background: var(--jr-purple-dim); color: var(--jr-purple); border: 1px solid rgba(191,90,242,0.2); }
+        .jr-dur { display: flex; align-items: center; gap: 4px; font-size: 11px; color: var(--jr-text-3); margin-top: 7px; letter-spacing: -0.01em; }
+        .jr-empty { text-align: center; padding: 64px 24px; color: var(--jr-text-4); font-size: 14px; letter-spacing: -0.01em; }
 
-        .jr-rel-badge {
-          display: inline-flex; font-size: 10.5px; padding: 3px 8px;
-          border-radius: 999px; margin-bottom: 8px;
-          background: var(--purple-dim); color: var(--purple);
-          border: 1px solid rgba(191,90,242,0.2);
-        }
-        .jr-dur {
-          display: flex; align-items: center; gap: 4px;
-          font-size: 11px; color: var(--text-3); margin-top: 7px;
-          letter-spacing: -0.01em;
-        }
-
-        /* ── Empty ── */
-        .jr-empty {
-          text-align: center; padding: 64px 24px;
-          color: var(--text-4); font-size: 14px; letter-spacing: -0.01em;
-        }
-
-        /* ── Animations ── */
-        @keyframes jrFade {
-          from { opacity: 0; transform: translateY(16px); }
-          to   { opacity: 1; transform: translateY(0); }
-        }
+        @keyframes jrFade { from { opacity: 0; transform: translateY(16px); } to { opacity: 1; transform: translateY(0); } }
       `}</style>
 
       <div className="jr-root">
         <div className="jr-inner" data-testid="job-recommendations-page">
-          {/* ── Header ── */}
           <div className="jr-header">
             <div className="jr-eyebrow">
               <div className="jr-eyebrow-dot" />
@@ -638,7 +473,6 @@ const JobRecommendations = () => {
             </p>
           </div>
 
-          {/* ── Skills Input ── */}
           <div className="jr-card" data-testid="skills-input-card">
             <div className="jr-card-title">Your Skills</div>
             <p className="jr-card-sub">
@@ -682,7 +516,6 @@ const JobRecommendations = () => {
             )}
           </div>
 
-          {/* ── Tabs ── */}
           <div className="jr-tabs">
             <button
               className={`jr-tab ${activeTab === "jobs" ? "active" : "inactive"}`}
@@ -700,7 +533,6 @@ const JobRecommendations = () => {
             </button>
           </div>
 
-          {/* ── Jobs Tab ── */}
           {activeTab === "jobs" && (
             <div>
               <button
@@ -717,7 +549,6 @@ const JobRecommendations = () => {
                   </>
                 )}
               </button>
-
               {jobs.length > 0 ? (
                 <div className="jr-jobs-grid" data-testid="jobs-grid">
                   {jobs.map((job) => (
@@ -772,7 +603,6 @@ const JobRecommendations = () => {
             </div>
           )}
 
-          {/* ── Learning Tab ── */}
           {activeTab === "learning" && (
             <div>
               <div className="jr-card">
@@ -806,7 +636,6 @@ const JobRecommendations = () => {
 
               {learningPath && (
                 <div data-testid="learning-path-result">
-                  {/* Roadmap */}
                   {learningPath?.roadmap?.length > 0 && (
                     <div className="jr-card jr-roadmap">
                       <div className="jr-roadmap-title">
@@ -821,7 +650,6 @@ const JobRecommendations = () => {
                     </div>
                   )}
 
-                  {/* Gap Analysis */}
                   <div className="jr-card" style={{ marginBottom: "16px" }}>
                     <div
                       className="jr-card-title"
@@ -844,7 +672,10 @@ const JobRecommendations = () => {
                           ))
                         ) : (
                           <span
-                            style={{ color: "var(--text-4)", fontSize: "13px" }}
+                            style={{
+                              color: "var(--jr-text-4)",
+                              fontSize: "13px",
+                            }}
                           >
                             No data available
                           </span>
@@ -866,7 +697,10 @@ const JobRecommendations = () => {
                           ))
                         ) : (
                           <span
-                            style={{ color: "var(--green)", fontSize: "13px" }}
+                            style={{
+                              color: "var(--jr-green)",
+                              fontSize: "13px",
+                            }}
                           >
                             ✓ All required skills covered!
                           </span>
@@ -884,7 +718,6 @@ const JobRecommendations = () => {
                     </div>
                   </div>
 
-                  {/* Courses */}
                   {learningPath.recommended_courses?.length > 0 && (
                     <div>
                       <div className="jr-courses-head">Recommended Courses</div>
@@ -902,7 +735,6 @@ const JobRecommendations = () => {
                               className="jr-course"
                               data-testid={`course-card-${index}`}
                             >
-                              {/* ── Thumbnail with graceful fallback ── */}
                               <div className="jr-course-img-wrap">
                                 <CourseImage
                                   src={course.thumbnail}
@@ -910,7 +742,6 @@ const JobRecommendations = () => {
                                   index={index}
                                 />
                               </div>
-
                               <div className="jr-course-body">
                                 {course.relevance_score && (
                                   <div className="jr-rel-badge">

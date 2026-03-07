@@ -7,12 +7,16 @@ import {
   Briefcase,
   LayoutDashboard,
   LogOut,
+  Sun,
+  Moon,
 } from "lucide-react";
+import { useTheme } from "@/context/ThemeContext";
 
 const Navbar = ({ user, onLogout }) => {
   const location = useLocation();
   const [scrolled, setScrolled] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
+  const { theme, toggleTheme, isDark } = useTheme();
 
   useEffect(() => {
     const fn = () => setScrolled(window.scrollY > 20);
@@ -40,13 +44,24 @@ const Navbar = ({ user, onLogout }) => {
           background: transparent;
           padding: 26px 0;
         }
-        .nav-root.nav-scrolled {
-          background: rgba(0, 0, 0, 0.75);
+
+        /* Dark scrolled */
+        [data-theme="dark"] .nav-root.nav-scrolled {
+          background: rgba(0,0,0,0.75);
           backdrop-filter: saturate(180%) blur(24px);
           -webkit-backdrop-filter: saturate(180%) blur(24px);
           border-bottom: 1px solid rgba(255,255,255,0.08);
           padding: 14px 0;
           box-shadow: 0 1px 0 rgba(255,255,255,0.04), 0 8px 40px rgba(0,0,0,0.4);
+        }
+        /* Light scrolled */
+        [data-theme="light"] .nav-root.nav-scrolled {
+          background: rgba(255,255,255,0.85);
+          backdrop-filter: saturate(180%) blur(24px);
+          -webkit-backdrop-filter: saturate(180%) blur(24px);
+          border-bottom: 1px solid rgba(0,0,0,0.08);
+          padding: 14px 0;
+          box-shadow: 0 1px 0 rgba(0,0,0,0.04), 0 8px 40px rgba(0,0,0,0.08);
         }
 
         .nav-inner {
@@ -74,18 +89,21 @@ const Navbar = ({ user, onLogout }) => {
           box-shadow: 0 6px 22px rgba(41,151,255,0.48);
         }
         .nav-logo-name {
-          font-size: 19px; font-weight: 700; color: #f5f5f7;
+          font-size: 19px; font-weight: 700;
           letter-spacing: -0.02em; line-height: 1;
         }
+        [data-theme="dark"] .nav-logo-name { color: #f5f5f7; }
+        [data-theme="light"] .nav-logo-name { color: #1d1d1f; }
         .nav-logo-name span {
           background: linear-gradient(135deg, #2997ff, #5ac8fa);
-          -webkit-background-clip: text; -webkit-text-fill-color: transparent;
-          background-clip: text;
+          -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
         }
         .nav-logo-tag {
           font-size: 10px; font-weight: 600; letter-spacing: 0.14em;
-          text-transform: uppercase; color: #6e6e73; display: block; margin-top: 3px;
+          text-transform: uppercase; display: block; margin-top: 3px;
         }
+        [data-theme="dark"] .nav-logo-tag { color: #6e6e73; }
+        [data-theme="light"] .nav-logo-tag { color: #86868b; }
 
         /* Desktop Links */
         .nav-links {
@@ -96,122 +114,204 @@ const Navbar = ({ user, onLogout }) => {
           display: flex; align-items: center; gap: 7px;
           padding: 9px 16px; border-radius: 11px;
           font-size: 15px; font-weight: 500; text-decoration: none;
-          color: #a1a1a6; letter-spacing: -0.01em;
+          letter-spacing: -0.01em;
           transition: color 0.2s ease, background 0.2s ease;
           white-space: nowrap;
         }
-        .nav-link:hover {
-          color: #f5f5f7;
-          background: rgba(255,255,255,0.07);
-        }
-        .nav-link.nav-active {
-          color: #2997ff;
-          background: rgba(41,151,255,0.1);
-        }
+        [data-theme="dark"] .nav-link { color: #a1a1a6; }
+        [data-theme="dark"] .nav-link:hover { color: #f5f5f7; background: rgba(255,255,255,0.07); }
+        [data-theme="dark"] .nav-link.nav-active { color: #2997ff; background: rgba(41,151,255,0.1); }
+        [data-theme="light"] .nav-link { color: #6e6e73; }
+        [data-theme="light"] .nav-link:hover { color: #1d1d1f; background: rgba(0,0,0,0.05); }
+        [data-theme="light"] .nav-link.nav-active { color: #2997ff; background: rgba(41,151,255,0.08); }
         .nav-link svg { flex-shrink: 0; }
 
         /* Right side */
         .nav-right {
           display: flex; align-items: center; gap: 10px; flex-shrink: 0;
         }
+
+        /* Theme Toggle Button — now at far right */
+        .nav-theme-toggle {
+          display: flex; align-items: center; justify-content: center;
+          width: 36px; height: 36px; border-radius: 10px;
+          cursor: pointer; border: none; transition: all 0.2s ease;
+          position: relative; overflow: hidden;
+        }
+        [data-theme="dark"] .nav-theme-toggle {
+          background: rgba(255,255,255,0.06);
+          border: 1px solid rgba(255,255,255,0.1);
+          color: #fbbf24;
+        }
+        [data-theme="dark"] .nav-theme-toggle:hover {
+          background: rgba(251,191,36,0.1);
+          border-color: rgba(251,191,36,0.25);
+        }
+        [data-theme="light"] .nav-theme-toggle {
+          background: rgba(0,0,0,0.05);
+          border: 1px solid rgba(0,0,0,0.1);
+          color: #6e6e73;
+        }
+        [data-theme="light"] .nav-theme-toggle:hover {
+          background: rgba(41,151,255,0.08);
+          border-color: rgba(41,151,255,0.2);
+          color: #2997ff;
+        }
+        .nav-theme-icon {
+          transition: transform 0.4s cubic-bezier(0.34,1.56,0.64,1), opacity 0.2s;
+        }
+
         .nav-user-pill {
           display: flex; align-items: center; gap: 9px;
           padding: 6px 14px 6px 6px; border-radius: 999px;
-          background: rgba(255,255,255,0.05);
-          border: 1px solid rgba(255,255,255,0.1);
           transition: border-color 0.2s ease;
         }
-        .nav-user-pill:hover { border-color: rgba(255,255,255,0.18); }
+        [data-theme="dark"] .nav-user-pill {
+          background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1);
+        }
+        [data-theme="dark"] .nav-user-pill:hover { border-color: rgba(255,255,255,0.18); }
+        [data-theme="light"] .nav-user-pill {
+          background: rgba(0,0,0,0.04); border: 1px solid rgba(0,0,0,0.1);
+        }
+        [data-theme="light"] .nav-user-pill:hover { border-color: rgba(0,0,0,0.18); }
+
         .nav-avatar {
           width: 28px; height: 28px; border-radius: 50%;
           background: linear-gradient(135deg, #2997ff, #5ac8fa);
           display: flex; align-items: center; justify-content: center;
           font-size: 12px; font-weight: 700; color: white; flex-shrink: 0;
         }
-        .nav-username { font-size: 14px; color: #a1a1a6; font-weight: 500; }
+        .nav-username { font-size: 14px; font-weight: 500; }
+        [data-theme="dark"] .nav-username { color: #a1a1a6; }
+        [data-theme="light"] .nav-username { color: #6e6e73; }
+
         .nav-logout {
           display: flex; align-items: center; gap: 7px;
           padding: 9px 17px; border-radius: 11px;
           font-size: 14px; font-weight: 500; cursor: pointer;
-          background: transparent;
-          border: 1px solid rgba(255,255,255,0.1);
-          color: #6e6e73;
-          font-family: inherit;
+          background: transparent; font-family: inherit;
           transition: all 0.2s ease;
         }
-        .nav-logout:hover {
-          border-color: rgba(248,113,113,0.35);
-          color: #f87171;
+        [data-theme="dark"] .nav-logout {
+          border: 1px solid rgba(255,255,255,0.1); color: #6e6e73;
+        }
+        [data-theme="dark"] .nav-logout:hover {
+          border-color: rgba(248,113,113,0.35); color: #f87171;
           background: rgba(248,113,113,0.06);
+        }
+        [data-theme="light"] .nav-logout {
+          border: 1px solid rgba(0,0,0,0.1); color: #86868b;
+        }
+        [data-theme="light"] .nav-logout:hover {
+          border-color: rgba(220,38,38,0.3); color: #dc2626;
+          background: rgba(220,38,38,0.04);
         }
 
         /* Mobile toggle */
         .nav-mobile-btn {
           display: none; background: none;
-          border: 1px solid rgba(255,255,255,0.12);
-          cursor: pointer; color: #a1a1a6;
-          padding: 8px; border-radius: 10px; line-height: 0;
+          cursor: pointer; padding: 8px; border-radius: 10px; line-height: 0;
           transition: border-color 0.2s ease, color 0.2s ease;
         }
-        .nav-mobile-btn:hover {
+        [data-theme="dark"] .nav-mobile-btn {
+          border: 1px solid rgba(255,255,255,0.12); color: #a1a1a6;
+        }
+        [data-theme="dark"] .nav-mobile-btn:hover {
           border-color: rgba(255,255,255,0.22); color: #f5f5f7;
+        }
+        [data-theme="light"] .nav-mobile-btn {
+          border: 1px solid rgba(0,0,0,0.12); color: #6e6e73;
+        }
+        [data-theme="light"] .nav-mobile-btn:hover {
+          border-color: rgba(0,0,0,0.22); color: #1d1d1f;
         }
 
         /* Mobile menu */
         .nav-mobile-menu {
-          margin: 10px 16px 0;
-          border-radius: 20px;
-          background: rgba(17,17,17,0.96);
-          border: 1px solid rgba(255,255,255,0.1);
+          margin: 10px 16px 0; border-radius: 20px;
           padding: 12px;
-          box-shadow: 0 20px 60px rgba(0,0,0,0.6);
-          backdrop-filter: blur(24px);
-          -webkit-backdrop-filter: blur(24px);
+          box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+          backdrop-filter: blur(24px); -webkit-backdrop-filter: blur(24px);
           animation: navMenuIn 0.22s ease;
+        }
+        [data-theme="dark"] .nav-mobile-menu {
+          background: rgba(17,17,17,0.96); border: 1px solid rgba(255,255,255,0.1);
+        }
+        [data-theme="light"] .nav-mobile-menu {
+          background: rgba(255,255,255,0.96); border: 1px solid rgba(0,0,0,0.1);
         }
         @keyframes navMenuIn {
           from { opacity: 0; transform: translateY(-8px) scale(0.98); }
           to   { opacity: 1; transform: translateY(0) scale(1); }
         }
-        .nav-mobile-user {
-          display: flex; align-items: center; gap: 12px;
-          padding: 14px 16px 16px;
-        }
+        .nav-mobile-user { display: flex; align-items: center; gap: 12px; padding: 14px 16px 16px; }
         .nav-mobile-avatar {
           width: 36px; height: 36px; border-radius: 50%;
           background: linear-gradient(135deg, #2997ff, #5ac8fa);
           display: flex; align-items: center; justify-content: center;
           font-size: 14px; font-weight: 700; color: white; flex-shrink: 0;
         }
-        .nav-mobile-name { font-size: 15px; font-weight: 600; color: #f5f5f7; }
-        .nav-mobile-role { font-size: 12px; color: #6e6e73; margin-top: 2px; }
-        .nav-mobile-divider {
-          height: 1px; background: rgba(255,255,255,0.07); margin: 6px 4px;
-        }
+        .nav-mobile-name { font-size: 15px; font-weight: 600; }
+        [data-theme="dark"] .nav-mobile-name { color: #f5f5f7; }
+        [data-theme="light"] .nav-mobile-name { color: #1d1d1f; }
+        .nav-mobile-role { font-size: 12px; margin-top: 2px; }
+        [data-theme="dark"] .nav-mobile-role { color: #6e6e73; }
+        [data-theme="light"] .nav-mobile-role { color: #86868b; }
+
+        .nav-mobile-divider { height: 1px; margin: 6px 4px; }
+        [data-theme="dark"] .nav-mobile-divider { background: rgba(255,255,255,0.07); }
+        [data-theme="light"] .nav-mobile-divider { background: rgba(0,0,0,0.07); }
+
         .nav-mobile-link {
           display: flex; align-items: center; gap: 12px;
           padding: 12px 16px; border-radius: 12px;
           font-size: 15px; font-weight: 500; text-decoration: none;
-          color: #a1a1a6; font-family: inherit;
-          transition: all 0.18s ease;
+          font-family: inherit; transition: all 0.18s ease;
         }
-        .nav-mobile-link:hover {
-          color: #f5f5f7; background: rgba(255,255,255,0.06);
+        [data-theme="dark"] .nav-mobile-link { color: #a1a1a6; }
+        [data-theme="dark"] .nav-mobile-link:hover { color: #f5f5f7; background: rgba(255,255,255,0.06); }
+        [data-theme="dark"] .nav-mobile-link.nav-active { color: #2997ff; background: rgba(41,151,255,0.1); font-weight: 600; }
+        [data-theme="light"] .nav-mobile-link { color: #6e6e73; }
+        [data-theme="light"] .nav-mobile-link:hover { color: #1d1d1f; background: rgba(0,0,0,0.05); }
+        [data-theme="light"] .nav-mobile-link.nav-active { color: #2997ff; background: rgba(41,151,255,0.08); font-weight: 600; }
+
+        /* Mobile theme toggle row */
+        .nav-mobile-theme-row {
+          display: flex; align-items: center; justify-content: space-between;
+          padding: 12px 16px; border-radius: 12px;
         }
-        .nav-mobile-link.nav-active {
-          color: #2997ff; background: rgba(41,151,255,0.1);
-          font-weight: 600;
+        .nav-mobile-theme-label { font-size: 15px; font-weight: 500; }
+        [data-theme="dark"] .nav-mobile-theme-label { color: #a1a1a6; }
+        [data-theme="light"] .nav-mobile-theme-label { color: #6e6e73; }
+
+        /* Toggle switch */
+        .nav-toggle-switch {
+          width: 44px; height: 26px; border-radius: 999px; cursor: pointer;
+          position: relative; border: none; transition: background 0.3s;
+          flex-shrink: 0;
         }
+        [data-theme="dark"] .nav-toggle-switch { background: #2997ff; }
+        [data-theme="light"] .nav-toggle-switch { background: rgba(0,0,0,0.15); }
+        .nav-toggle-thumb {
+          position: absolute; top: 3px;
+          width: 20px; height: 20px; border-radius: 50%; background: #fff;
+          transition: left 0.3s cubic-bezier(0.34,1.56,0.64,1);
+          box-shadow: 0 1px 4px rgba(0,0,0,0.3);
+          display: flex; align-items: center; justify-content: center;
+        }
+        [data-theme="dark"] .nav-toggle-thumb { left: 21px; }
+        [data-theme="light"] .nav-toggle-thumb { left: 3px; }
+
         .nav-mobile-logout {
           display: flex; align-items: center; gap: 12px;
           padding: 12px 16px; border-radius: 12px;
           font-size: 15px; font-weight: 500; cursor: pointer;
-          background: none; border: none;
-          color: #f87171; width: 100%;
-          font-family: inherit;
-          transition: all 0.18s ease;
+          background: none; border: none; color: #f87171; width: 100%;
+          font-family: inherit; transition: all 0.18s ease;
         }
+        [data-theme="light"] .nav-mobile-logout { color: #dc2626; }
         .nav-mobile-logout:hover { background: rgba(248,113,113,0.08); }
+        [data-theme="light"] .nav-mobile-logout:hover { background: rgba(220,38,38,0.06); }
 
         @media (max-width: 960px) { .nav-links { display: none; } }
         @media (max-width: 768px) {
@@ -254,14 +354,13 @@ const Navbar = ({ user, onLogout }) => {
                   className={`nav-link ${isActive ? "nav-active" : ""}`}
                   data-testid={`nav-${item.label.toLowerCase().replace(/ /g, "-")}`}
                 >
-                  <Icon size={15} />
-                  {item.label}
+                  <Icon size={15} /> {item.label}
                 </Link>
               );
             })}
           </div>
 
-          {/* Desktop Right */}
+          {/* Desktop Right — order: User pill → Sign out → Theme toggle */}
           <div className="nav-right">
             <div className="nav-user-pill">
               <div className="nav-avatar">
@@ -269,6 +368,7 @@ const Navbar = ({ user, onLogout }) => {
               </div>
               <span className="nav-username">{user?.name}</span>
             </div>
+
             <button
               className="nav-logout"
               onClick={onLogout}
@@ -276,9 +376,20 @@ const Navbar = ({ user, onLogout }) => {
             >
               <LogOut size={15} /> Sign out
             </button>
+
+            {/* Theme toggle — extreme right */}
+            <button
+              className="nav-theme-toggle"
+              onClick={toggleTheme}
+              title={isDark ? "Switch to Light Mode" : "Switch to Dark Mode"}
+            >
+              <span className="nav-theme-icon">
+                {isDark ? <Sun size={16} /> : <Moon size={16} />}
+              </span>
+            </button>
           </div>
 
-          {/* Mobile Toggle */}
+          {/* Mobile Toggle Button */}
           <button
             className="nav-mobile-btn"
             onClick={() => setMobileOpen(!mobileOpen)}
@@ -313,7 +424,7 @@ const Navbar = ({ user, onLogout }) => {
           </button>
         </div>
 
-        {/* Mobile Menu */}
+        {/* Mobile Menu — unchanged */}
         {mobileOpen && (
           <div className="nav-mobile-menu">
             <div className="nav-mobile-user">
@@ -340,6 +451,24 @@ const Navbar = ({ user, onLogout }) => {
                 </Link>
               );
             })}
+            <div className="nav-mobile-divider" />
+
+            {/* Mobile Theme Toggle */}
+            <div className="nav-mobile-theme-row">
+              <span className="nav-mobile-theme-label">
+                {isDark ? "🌙 Dark Mode" : "☀️ Light Mode"}
+              </span>
+              <button className="nav-toggle-switch" onClick={toggleTheme}>
+                <span className="nav-toggle-thumb">
+                  {isDark ? (
+                    <Moon size={10} color="#2997ff" />
+                  ) : (
+                    <Sun size={10} color="#f59e0b" />
+                  )}
+                </span>
+              </button>
+            </div>
+
             <div className="nav-mobile-divider" />
             <button className="nav-mobile-logout" onClick={onLogout}>
               <LogOut size={16} /> Sign out

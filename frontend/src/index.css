@@ -1,4 +1,5 @@
 @import url("https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;1,9..40,300&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Space+Grotesk:wght@500;600;700&display=swap");
 
 @tailwind base;
 @tailwind components;
@@ -7,7 +8,12 @@
 html {
   font-size: 15px;
 }
-:root {
+
+/* ============================================================
+   DARK MODE (default)
+   ============================================================ */
+:root,
+[data-theme="dark"] {
   --bg-base: #080c10;
   --bg-surface: #0d1117;
   --bg-elevated: #161b22;
@@ -29,8 +35,90 @@ html {
     rgba(255, 255, 255, 0.04) 0%,
     rgba(255, 255, 255, 0.01) 100%
   );
+
+  /* General page colors */
+  --page-bg: linear-gradient(135deg, #080c10 0%, #0d1117 100%);
+  --body-color: #f0f6fc;
+  --card-bg: #161b22;
+  --card-border: rgba(255, 255, 255, 0.07);
+  --card-shadow: 0 4px 16px rgba(0, 0, 0, 0.4);
+  --card-hover-shadow: 0 8px 24px rgba(0, 0, 0, 0.6);
+  --input-bg: #0d1117;
+  --input-border: rgba(255, 255, 255, 0.12);
+  --input-focus-border: #63ebda;
+  --input-color: #f0f6fc;
+  --glass-bg: rgba(255, 255, 255, 0.04);
+  --glass-border: rgba(255, 255, 255, 0.07);
+
+  /* Roadmap / Job cards */
+  --roadmap-bg: #161b22;
+  --roadmap-step-bg: #0d1117;
+  --roadmap-step-hover-bg: #161b22;
+  --roadmap-title-color: #f0f6fc;
+  --step-text-color: #c9d1d9;
+  --job-card-bg: #161b22;
+  --job-card-border: rgba(255, 255, 255, 0.07);
+  --job-card-hover-bg: linear-gradient(180deg, #161b22, #1c2333);
+  --job-card-hover-border: #63ebda;
+  --section-title-color: #f0f6fc;
 }
 
+/* ============================================================
+   LIGHT MODE
+   ============================================================ */
+[data-theme="light"] {
+  --bg-base: #f5f7fa;
+  --bg-surface: #ffffff;
+  --bg-elevated: #eef2f7;
+  --border: rgba(0, 0, 0, 0.08);
+  --border-bright: rgba(30, 64, 175, 0.3);
+  --accent: #1e40af;
+  --accent-dim: rgba(30, 64, 175, 0.1);
+  --accent-glow: rgba(59, 130, 246, 0.3);
+  --text-primary: #1e293b;
+  --text-secondary: #64748b;
+  --text-muted: #94a3b8;
+  --gradient-hero: radial-gradient(
+    ellipse 80% 50% at 50% -10%,
+    rgba(59, 130, 246, 0.12) 0%,
+    transparent 70%
+  );
+  --gradient-card: linear-gradient(
+    135deg,
+    rgba(255, 255, 255, 0.9) 0%,
+    rgba(255, 255, 255, 0.7) 100%
+  );
+
+  /* General page colors */
+  --page-bg: linear-gradient(135deg, #f5f7fa 0%, #e8eef5 100%);
+  --body-color: #1e293b;
+  --card-bg: #ffffff;
+  --card-border: rgba(0, 0, 0, 0.08);
+  --card-shadow: 0 4px 16px rgba(0, 0, 0, 0.06);
+  --card-hover-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
+  --input-bg: #ffffff;
+  --input-border: #e2e8f0;
+  --input-focus-border: #3b82f6;
+  --input-color: #1e293b;
+  --glass-bg: rgba(255, 255, 255, 0.85);
+  --glass-border: rgba(255, 255, 255, 0.3);
+
+  /* Roadmap / Job cards */
+  --roadmap-bg: #ffffff;
+  --roadmap-step-bg: #f8faff;
+  --roadmap-step-hover-bg: #eef2ff;
+  --roadmap-title-color: #1f2937;
+  --step-text-color: #111827;
+  --job-card-bg: #ffffff;
+  --job-card-border: #e5e7eb;
+  --job-card-hover-bg: linear-gradient(180deg, #ffffff, #f8faff);
+  --job-card-hover-border: #6366f1;
+  --section-title-color: #1f2937;
+}
+
+/* ============================================================
+   BASE STYLES
+   ============================================================ */
 * {
   box-sizing: border-box;
   margin: 0;
@@ -38,16 +126,277 @@ html {
 }
 
 body {
+  background: var(--page-bg);
   background-color: var(--bg-base);
-  color: var(--text-primary);
-  font-family: "DM Sans", sans-serif;
+  color: var(--body-color);
+  font-family: "Inter", "DM Sans", sans-serif;
   -webkit-font-smoothing: antialiased;
+  min-height: 100vh;
+  transition:
+    background 0.3s ease,
+    color 0.3s ease;
+}
+
+.App {
+  min-height: 100vh;
+}
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+  font-family: "Space Grotesk", "Syne", sans-serif;
 }
 
 .font-display {
   font-family: "Syne", sans-serif;
 }
 
+/* ============================================================
+   UTILITY / COMPONENT CLASSES — now theme-aware
+   ============================================================ */
+
+.gradient-text {
+  background: linear-gradient(135deg, #1e40af 0%, #3b82f6 50%, #06b6d4 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.glass {
+  background: var(--glass-bg);
+  border: 1px solid var(--glass-border);
+  backdrop-filter: blur(12px);
+}
+.glass-bright {
+  background: var(--glass-bg);
+  border: 1px solid var(--border-bright);
+  backdrop-filter: blur(12px);
+}
+
+.glass-card {
+  background: var(--glass-bg);
+  backdrop-filter: blur(12px);
+  border: 1px solid var(--glass-border);
+  box-shadow: var(--card-shadow);
+}
+
+.card {
+  background: var(--card-bg);
+  border: 1px solid var(--card-border);
+  border-radius: 12px;
+  padding: 1.5rem;
+  box-shadow: var(--card-shadow);
+  transition: all 0.3s ease;
+}
+.card:hover {
+  transform: translateY(-4px);
+  box-shadow: var(--card-hover-shadow);
+}
+
+.card-hover {
+  transition:
+    border-color 0.3s,
+    transform 0.3s,
+    box-shadow 0.3s;
+}
+.card-hover:hover {
+  border-color: var(--border-bright);
+  transform: translateY(-4px);
+  box-shadow:
+    0 20px 60px rgba(0, 0, 0, 0.2),
+    0 0 30px var(--accent-dim);
+}
+
+/* Buttons */
+.btn-primary {
+  background: linear-gradient(135deg, #63ebda, #2dd4bf);
+  color: #080c10;
+  font-weight: 600;
+  border: none;
+  padding: 0.75rem 1.5rem;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+.btn-primary:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 30px var(--accent-glow);
+}
+
+[data-theme="light"] .btn-primary {
+  background: linear-gradient(135deg, #1e40af 0%, #3b82f6 100%);
+  color: white;
+}
+[data-theme="light"] .btn-primary:hover {
+  box-shadow: 0 8px 16px rgba(59, 130, 246, 0.3);
+}
+
+.btn-ghost {
+  background: transparent;
+  border: 1px solid var(--border);
+  color: var(--text-secondary);
+  padding: 0.75rem 1.5rem;
+  border-radius: 8px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+.btn-ghost:hover {
+  border-color: var(--accent);
+  color: var(--accent);
+  background: var(--accent-dim);
+}
+
+.btn-secondary {
+  background: var(--card-bg);
+  color: var(--accent);
+  border: 2px solid var(--accent);
+  padding: 0.75rem 1.5rem;
+  border-radius: 8px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+.btn-secondary:hover {
+  background: var(--accent);
+  color: var(--bg-base);
+}
+
+/* Input */
+.input-field {
+  width: 100%;
+  padding: 0.875rem 1rem;
+  border: 2px solid var(--input-border);
+  border-radius: 8px;
+  font-size: 1rem;
+  transition: all 0.3s ease;
+  background: var(--input-bg);
+  color: var(--input-color);
+}
+.input-field:focus {
+  outline: none;
+  border-color: var(--input-focus-border);
+  box-shadow: 0 0 0 3px var(--accent-dim);
+}
+
+/* Progress bar */
+.progress-bar {
+  background: linear-gradient(90deg, #63ebda, #2dd4bf);
+  border-radius: 9999px;
+  transition: width 1.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+[data-theme="light"] .progress-bar {
+  background: linear-gradient(90deg, #1e40af, #3b82f6);
+}
+
+/* Noise bg */
+.noise-bg::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.03'/%3E%3C/svg%3E");
+  pointer-events: none;
+  z-index: 0;
+}
+
+/* ============================================================
+   JOB CARDS
+   ============================================================ */
+.job-card {
+  transition: all 0.3s ease;
+  border-radius: 16px;
+  border: 1px solid var(--job-card-border);
+  background: var(--job-card-bg);
+  color: var(--body-color);
+}
+.job-card:hover {
+  transform: translateY(-6px) scale(1.01);
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.15);
+  border-color: var(--job-card-hover-border);
+  background: var(--job-card-hover-bg);
+}
+
+.apply-btn {
+  margin-top: 10px;
+  padding: 8px 14px;
+  border-radius: 10px;
+  border: none;
+  background: #4f46e5;
+  color: white;
+  font-weight: 600;
+  cursor: pointer;
+  transition: 0.2s;
+}
+.apply-btn:hover {
+  background: #3730a3;
+  transform: scale(1.05);
+}
+
+/* ============================================================
+   ROADMAP
+   ============================================================ */
+.roadmap-section {
+  margin-top: 25px;
+  padding: 24px;
+  background: var(--roadmap-bg);
+  border-radius: 16px;
+  box-shadow: var(--card-shadow);
+  border: 1px solid var(--card-border);
+}
+
+.section-title {
+  font-size: 22px;
+  font-weight: 700;
+  margin-bottom: 18px;
+  color: var(--section-title-color);
+}
+
+.roadmap-container {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.roadmap-step {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 14px 18px;
+  border-left: 4px solid #4f46e5;
+  background: var(--roadmap-step-bg);
+  border-radius: 12px;
+  transition: all 0.3s ease;
+}
+.roadmap-step:hover {
+  transform: translateX(6px);
+  background: var(--roadmap-step-hover-bg);
+  box-shadow: 0 8px 20px rgba(79, 70, 229, 0.08);
+}
+
+.step-circle {
+  min-width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: #4f46e5;
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 600;
+}
+
+.step-text {
+  font-size: 15px;
+  font-weight: 500;
+  color: var(--step-text-color);
+}
+
+/* ============================================================
+   ANIMATIONS
+   ============================================================ */
 @keyframes float {
   0%,
   100% {
@@ -104,6 +453,26 @@ body {
     transform: translateY(100vh);
   }
 }
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+@keyframes slideIn {
+  from {
+    opacity: 0;
+    transform: translateX(-30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
 
 .animate-float {
   animation: float 6s ease-in-out infinite;
@@ -126,6 +495,12 @@ body {
 .animate-fade-up-delay-4 {
   animation: fade-up 0.6s 0.4s ease both;
 }
+.fade-in {
+  animation: fadeIn 0.6s ease forwards;
+}
+.slide-in {
+  animation: slideIn 0.5s ease forwards;
+}
 
 .shimmer-text {
   background: linear-gradient(
@@ -139,62 +514,4 @@ body {
   -webkit-text-fill-color: transparent;
   background-clip: text;
   animation: shimmer 4s linear infinite;
-}
-
-.glass {
-  background: var(--gradient-card);
-  border: 1px solid var(--border);
-  backdrop-filter: blur(12px);
-}
-.glass-bright {
-  background: var(--gradient-card);
-  border: 1px solid var(--border-bright);
-  backdrop-filter: blur(12px);
-}
-.card-hover {
-  transition:
-    border-color 0.3s,
-    transform 0.3s,
-    box-shadow 0.3s;
-}
-.card-hover:hover {
-  border-color: var(--border-bright);
-  transform: translateY(-4px);
-  box-shadow:
-    0 20px 60px rgba(0, 0, 0, 0.4),
-    0 0 30px var(--accent-dim);
-}
-.btn-primary {
-  background: linear-gradient(135deg, #63ebda, #2dd4bf);
-  color: #080c10;
-  font-weight: 600;
-  transition: all 0.2s;
-}
-.btn-primary:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 8px 30px var(--accent-glow);
-}
-.btn-ghost {
-  background: transparent;
-  border: 1px solid var(--border);
-  color: var(--text-secondary);
-  transition: all 0.2s;
-}
-.btn-ghost:hover {
-  border-color: var(--accent);
-  color: var(--accent);
-  background: var(--accent-dim);
-}
-.progress-bar {
-  background: linear-gradient(90deg, #63ebda, #2dd4bf);
-  border-radius: 9999px;
-  transition: width 1.2s cubic-bezier(0.4, 0, 0.2, 1);
-}
-.noise-bg::before {
-  content: "";
-  position: fixed;
-  inset: 0;
-  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.03'/%3E%3C/svg%3E");
-  pointer-events: none;
-  z-index: 0;
 }
