@@ -95,12 +95,15 @@ class LearningPathInput(BaseModel):
     target_role: str
 
 # Google OAuth request model
-# Frontend uses useGoogleLogin (access_token flow) which fetches userinfo
-# from Google's /userinfo endpoint and sends email + name + sub to us.
 class GoogleAuthRequest(BaseModel):
     email: str
     name: Optional[str] = None
     sub: str
+
+# ── NEW: Progress Tracker Models ──────────────────────────────────────────────
+class UserProgressUpdate(BaseModel):
+    target_role: Optional[str] = None
+    current_skills: Optional[List[str]] = None
 
 # ── Helpers ───────────────────────────────────────────────────────────────────
 
@@ -142,7 +145,7 @@ async def root():
 
 @api_router.post("/auth/signup")
 async def signup(user_data: UserCreate):
-    """Register a new user. Accepts JSON body with email, password, name."""
+    """Register a new user."""
     existing = await users_collection.find_one({"email": user_data.email})
     if existing:
         raise HTTPException(status_code=400, detail="User already exists")
@@ -174,7 +177,6 @@ async def login(user_data: UserLogin):
     if not user:
         raise HTTPException(status_code=401, detail="Invalid email or password")
 
-    # Google-only accounts have no password — block password login for them
     if not user.get("password"):
         raise HTTPException(
             status_code=401,
@@ -197,59 +199,182 @@ async def login(user_data: UserLogin):
 
 @api_router.post("/auth/google")
 async def google_login(body: GoogleAuthRequest):
-    """
-    Google OAuth endpoint — called after frontend fetches userinfo
-    from Google's /userinfo endpoint using useGoogleLogin (access_token flow).
-
-    Receives: { email, name, sub }
-    Returns:  same JWT structure as /auth/login so the rest of the app
-              never knows whether login came from email or Google.
-    """
+    """Google OAuth — find-or-create user, return same JWT as regular login."""
     if not body.email:
         raise HTTPException(status_code=400, detail="Email is required")
 
-    # Sanitise name — fall back to email prefix if Google didn't return one
     name = (body.name or "").strip() or body.email.split("@")[0]
 
-    # Find existing user by email OR by google_sub (handles edge cases)
     user = await users_collection.find_one(
         {"$or": [{"email": body.email}, {"google_sub": body.sub}]}
     )
 
     if not user:
-        # New user — create account (no password)
         user_doc = {
             "email": body.email,
             "name": name,
-            "password": None,           # Google users have no password
-            "google_sub": body.sub,     # store sub for future lookups
+            "password": None,
+            "google_sub": body.sub,
             "created_at": datetime.utcnow()
         }
         result = await users_collection.insert_one(user_doc)
         user_id = str(result.inserted_id)
-        logging.info(f"New Google user created: {body.email}")
     else:
         user_id = str(user["_id"])
-        name = user.get("name") or name   # keep existing name if already set
-
-        # Back-fill google_sub if this user previously signed up with email
+        name = user.get("name") or name
         if not user.get("google_sub"):
             await users_collection.update_one(
                 {"_id": user["_id"]},
                 {"$set": {"google_sub": body.sub}}
             )
-        logging.info(f"Existing user signed in via Google: {body.email}")
 
-    # Return identical JWT structure as /auth/login
     token = create_access_token({"sub": user_id})
     return {
         "access_token": token,
-        "user": {
-            "id": user_id,
-            "email": body.email,
-            "name": name
-        }
+        "user": {"id": user_id, "email": body.email, "name": name}
     }
+
+# ── NEW: User Progress Tracker ────────────────────────────────────────────────
+
+# Skill requirements per role (used for gap analysis)
+ROLE_SKILLS_MAP = {
+    "software_engineer":   ["Python", "JavaScript", "React", "Node.js", "SQL", "Git", "System Design", "AWS", "Docker", "REST APIs"],
+    "data_scientist":      ["Python", "Machine Learning", "SQL", "Statistics", "TensorFlow", "Pandas", "NumPy", "Data Visualization", "NLP", "Deep Learning"],
+    "frontend_developer":  ["HTML", "CSS", "JavaScript", "React", "TypeScript", "Git", "Responsive Design", "REST APIs", "Testing", "Performance Optimization"],
+    "devops_engineer":     ["Linux", "Docker", "Kubernetes", "AWS", "CI/CD", "Terraform", "Python", "Monitoring", "Git", "Bash"],
+    "ml_engineer":         ["Python", "TensorFlow", "PyTorch", "MLOps", "Docker", "SQL", "Statistics", "AWS", "Spark", "Feature Engineering"],
+    "product_manager":     ["Product Strategy", "Data Analysis", "SQL", "User Research", "Agile", "Roadmapping", "Communication", "A/B Testing", "Jira", "Analytics"],
+    "backend_developer":   ["Python", "Node.js", "SQL", "REST APIs", "Docker", "AWS", "Redis", "System Design", "Git", "Testing"],
+}
+
+@api_router.get("/user/progress")
+async def get_user_progress(user_id: str = Depends(get_current_user)):
+    """
+    Returns user's career progress:
+    - target role & skill gap
+    - latest resume score
+    - latest career prediction
+    - total predictions & resumes count
+    - badges earned
+    """
+    from bson import ObjectId
+
+    # 1. Fetch user profile (target_role, current_skills)
+    try:
+        user = await users_collection.find_one({"_id": ObjectId(user_id)})
+    except Exception:
+        user = None
+
+    target_role = user.get("target_role", "software_engineer") if user else "software_engineer"
+    current_skills = user.get("current_skills", []) if user else []
+
+    # 2. Latest resume analysis
+    latest_resume = None
+    resume_score = None
+    resume_skills = []
+    try:
+        latest_resume = await resume_collection.find_one(
+            {"user_id": user_id},
+            sort=[("created_at", -1)]
+        )
+        if latest_resume:
+            resume_score = latest_resume.get("resume_score")
+            resume_skills = latest_resume.get("skills", [])
+            # merge resume skills into current_skills
+            merged = list(set([s.lower() for s in current_skills] + [s.lower() for s in resume_skills]))
+            current_skills = merged
+    except Exception as e:
+        logging.warning(f"Could not fetch resume for progress: {e}")
+
+    # 3. Latest career prediction
+    latest_prediction = None
+    prediction_role = None
+    prediction_score = None
+    try:
+        latest_prediction = await db.predictions.find_one(
+            {"user_id": user_id},
+            sort=[("created_at", -1)]
+        )
+        if latest_prediction:
+            result = latest_prediction.get("result", {})
+            prediction_role = result.get("recommended_role") or result.get("top_role")
+            prediction_score = result.get("success_probability") or result.get("score")
+    except Exception as e:
+        logging.warning(f"Could not fetch prediction for progress: {e}")
+
+    # 4. Counts
+    try:
+        total_predictions = await db.predictions.count_documents({"user_id": user_id})
+    except Exception:
+        total_predictions = 0
+
+    try:
+        total_resumes = await resume_collection.count_documents({"user_id": user_id})
+    except Exception:
+        total_resumes = 0
+
+    # 5. Skill gap analysis
+    required_skills = ROLE_SKILLS_MAP.get(target_role, ROLE_SKILLS_MAP["software_engineer"])
+    current_lower = [s.lower() for s in current_skills]
+    skills_have = [s for s in required_skills if s.lower() in current_lower]
+    skills_missing = [s for s in required_skills if s.lower() not in current_lower]
+    completion_pct = round((len(skills_have) / len(required_skills)) * 100) if required_skills else 0
+
+    # 6. Badges
+    badges = []
+    if total_predictions >= 1:
+        badges.append({"name": "First Prediction", "icon": "🎯", "color": "34,211,153"})
+    if total_resumes >= 1:
+        badges.append({"name": "Resume Uploaded", "icon": "📄", "color": "41,151,255"})
+    if completion_pct >= 50:
+        badges.append({"name": "Halfway There", "icon": "⚡", "color": "251,191,36"})
+    if completion_pct >= 80:
+        badges.append({"name": "Almost Ready", "icon": "🚀", "color": "167,139,250"})
+    if resume_score and resume_score >= 70:
+        badges.append({"name": "Strong Resume", "icon": "💪", "color": "255,159,10"})
+    if total_predictions >= 5:
+        badges.append({"name": "Career Explorer", "icon": "🌟", "color": "90,200,250"})
+    if not badges:
+        badges.append({"name": "Getting Started", "icon": "🏁", "color": "110,110,115"})
+
+    return {
+        "target_role": target_role,
+        "current_skills": current_skills,
+        "required_skills": required_skills,
+        "skills_have": skills_have,
+        "skills_missing": skills_missing,
+        "completion_pct": completion_pct,
+        "resume_score": resume_score,
+        "resume_feedback": latest_resume.get("feedback") if latest_resume else None,
+        "prediction_role": prediction_role,
+        "prediction_score": prediction_score,
+        "total_predictions": total_predictions,
+        "total_resumes": total_resumes,
+        "badges": badges,
+    }
+
+
+@api_router.put("/user/progress")
+async def update_user_progress(body: UserProgressUpdate, user_id: str = Depends(get_current_user)):
+    """Save user's target role and/or current skills."""
+    from bson import ObjectId
+    update_fields = {}
+    if body.target_role is not None:
+        update_fields["target_role"] = body.target_role
+    if body.current_skills is not None:
+        update_fields["current_skills"] = body.current_skills
+
+    if update_fields:
+        try:
+            await users_collection.update_one(
+                {"_id": ObjectId(user_id)},
+                {"$set": update_fields}
+            )
+        except Exception as e:
+            logging.warning(f"Could not update user progress: {e}")
+            raise HTTPException(status_code=500, detail="Failed to update progress")
+
+    return {"success": True, "updated": update_fields}
 
 # ── AI Chat ───────────────────────────────────────────────────────────────────
 
@@ -259,7 +384,6 @@ async def chat_endpoint(payload: dict):
     if not message:
         raise HTTPException(status_code=400, detail="No message provided")
 
-    # Fallback demo replies (used if Lyzr is unavailable)
     demo_replies = {
         "hello":     "Hi there! 👋 I'm your AI Career Advisor. Ask me about resumes, interviews, salary negotiation, or career growth!",
         "hi":        "Hello! 😊 How can I help with your career today?",
@@ -276,7 +400,6 @@ async def chat_endpoint(payload: dict):
         "Great question! I can help with resume tips, interview prep, salary negotiation, and career growth. Could you be more specific?"
     )
 
-    # Try Lyzr API
     if LYZR_API_KEY and LYZR_AGENT_ID:
         try:
             response = requests.post(
@@ -307,13 +430,11 @@ async def chat_endpoint(payload: dict):
                         )
                     except (json.JSONDecodeError, AttributeError):
                         lyzr_reply = raw
-
                     if lyzr_reply:
                         logging.info("Lyzr API responded successfully")
                         return {"reply": lyzr_reply}
             else:
                 logging.warning(f"Lyzr returned {response.status_code}: {response.text[:200]}")
-
         except requests.exceptions.ConnectionError:
             logging.warning("Lyzr DNS resolution failed — using fallback")
         except requests.exceptions.Timeout:
@@ -404,9 +525,6 @@ async def analyze_resume_endpoint(
     file: UploadFile = File(None),
     user_id: Optional[str] = Depends(get_current_user_optional)
 ):
-    """Analyze resume (PDF upload or pasted text) and return ML score + course recommendations."""
-
-    # Step 1: Extract text
     text = None
     if resume_text:
         text = resume_text
@@ -428,11 +546,9 @@ async def analyze_resume_endpoint(
         raise HTTPException(status_code=400, detail="Could not extract text from resume")
 
     try:
-        # Step 2: Feature extraction + ML score
         features = extract_resume_features(text)
         score = predict_resume_score(features)
 
-        # Step 3: Feedback
         if score >= 85:
             feedback = "Excellent Resume 🚀 (Job Ready)"
         elif score >= 70:
@@ -442,18 +558,15 @@ async def analyze_resume_endpoint(
         else:
             feedback = "Weak Resume ❌ (Improve skills, projects and experience)"
 
-        # Step 4: Skill extraction
         detected_skills = extract_skills(text)
         if not detected_skills:
             detected_skills = ["programming"]
 
-        # Step 5: Real course recommendations
         courses = get_real_courses(detected_skills)
 
         logging.info(f"Detected Skills: {detected_skills}")
         logging.info(f"Real Courses Fetched: {len(courses)}")
 
-        # Step 6: Save to DB
         resume_doc = {
             "user_id": user_id or "guest",
             "resume_score": score,
