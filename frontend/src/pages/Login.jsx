@@ -2,10 +2,12 @@ import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { axiosInstance } from "@/App";
 import { toast } from "sonner";
+import { useGoogleLogin } from "@react-oauth/google";
 
 const Login = ({ setUser }) => {
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
+  const [googleLoading, setGoogleLoading] = useState(false);
   const [tab, setTab] = useState("login");
 
   const [loginData, setLoginData] = useState({ email: "", password: "" });
@@ -15,6 +17,7 @@ const Login = ({ setUser }) => {
     password: "",
   });
 
+  // ── Existing: Email/Password Login (UNCHANGED) ──────────────────────────────
   const handleLogin = async (e) => {
     e.preventDefault();
     setLoading(true);
@@ -36,6 +39,7 @@ const Login = ({ setUser }) => {
     }
   };
 
+  // ── Existing: Signup (UNCHANGED) ────────────────────────────────────────────
   const handleSignup = async (e) => {
     e.preventDefault();
     setLoading(true);
@@ -63,6 +67,49 @@ const Login = ({ setUser }) => {
       setLoading(false);
     }
   };
+
+  // ── NEW: Google OAuth ────────────────────────────────────────────────────────
+  const handleGoogleLogin = useGoogleLogin({
+    onSuccess: async (tokenResponse) => {
+      setGoogleLoading(true);
+      try {
+        // Step 1: get user info from Google using the access token
+        const userInfoRes = await fetch(
+          "https://www.googleapis.com/oauth2/v3/userinfo",
+          {
+            headers: { Authorization: `Bearer ${tokenResponse.access_token}` },
+          },
+        );
+        if (!userInfoRes.ok) throw new Error("Failed to fetch Google profile");
+        const userInfo = await userInfoRes.json();
+
+        // Step 2: send to backend → find-or-create user → get our JWT
+        const response = await axiosInstance.post("/auth/google", {
+          email: userInfo.email,
+          name: userInfo.name,
+          sub: userInfo.sub,
+        });
+
+        // Step 3: store JWT + user exactly like the existing login flow
+        const token = response.data.access_token;
+        const user = {
+          name: response.data.user.name,
+          email: response.data.user.email,
+        };
+        localStorage.setItem("token", token);
+        localStorage.setItem("user", JSON.stringify(user));
+        setUser(user);
+        toast.success("Signed in with Google!");
+        navigate("/");
+      } catch (error) {
+        const err = error?.response?.data?.detail;
+        toast.error(err || "Google sign-in failed. Please try again.");
+      } finally {
+        setGoogleLoading(false);
+      }
+    },
+    onError: () => toast.error("Google sign-in was cancelled or failed."),
+  });
 
   return (
     <>
@@ -99,6 +146,10 @@ const Login = ({ setUser }) => {
           0%,100% { opacity: 1; transform: scale(1); }
           50%      { opacity: 0.4; transform: scale(0.85); }
         }
+        @keyframes lgSpin {
+          from { transform: rotate(0deg); }
+          to   { transform: rotate(360deg); }
+        }
 
         .lg-grid {
           position: relative; z-index: 10;
@@ -107,7 +158,6 @@ const Login = ({ setUser }) => {
         }
         @media(min-width: 768px) { .lg-grid { grid-template-columns: 1fr 1fr; } }
 
-        /* Left panel */
         .lg-left {
           display: none;
           animation: lgPageIn 0.6s cubic-bezier(0.4, 0, 0.2, 1) both;
@@ -161,7 +211,6 @@ const Login = ({ setUser }) => {
           display: flex; align-items: center; justify-content: center;
         }
 
-        /* Auth card */
         .lg-card {
           background: rgba(255,255,255,0.03);
           border: 1px solid rgba(255,255,255,0.09);
@@ -252,6 +301,48 @@ const Login = ({ setUser }) => {
 
         .lg-divider {
           height: 1px; background: rgba(255,255,255,0.06); margin: 4px 0 20px;
+        }
+
+        /* ── Google button styles ── */
+        .lg-separator {
+          display: flex; align-items: center; gap: 12px;
+          margin: 20px 0 14px;
+        }
+        .lg-separator-line {
+          flex: 1; height: 1px; background: rgba(255,255,255,0.07);
+        }
+        .lg-separator-text {
+          color: #515154; font-size: 12px; font-weight: 500;
+          letter-spacing: 0.02em; white-space: nowrap;
+        }
+
+        .lg-google-btn {
+          width: 100%; padding: 13px 16px; border-radius: 14px;
+          border: 1px solid rgba(255,255,255,0.09);
+          background: rgba(255,255,255,0.04);
+          color: #e5e5ea; font-size: 14px; font-weight: 500;
+          font-family: inherit; letter-spacing: -0.01em;
+          cursor: pointer; display: flex; align-items: center;
+          justify-content: center; gap: 10px;
+          transition: all 0.25s ease;
+        }
+        .lg-google-btn:hover:not(:disabled) {
+          background: rgba(255,255,255,0.08);
+          border-color: rgba(255,255,255,0.16);
+          transform: translateY(-1px);
+          box-shadow: 0 4px 20px rgba(0,0,0,0.25);
+        }
+        .lg-google-btn:active:not(:disabled) {
+          transform: translateY(0);
+          background: rgba(255,255,255,0.06);
+        }
+        .lg-google-btn:disabled { opacity: 0.35; cursor: not-allowed; }
+
+        .lg-google-spinner {
+          width: 16px; height: 16px; border-radius: 50%; flex-shrink: 0;
+          border: 2px solid rgba(255,255,255,0.12);
+          border-top-color: #a1a1a6;
+          animation: lgSpin 0.7s linear infinite;
         }
       `}</style>
 
@@ -374,7 +465,11 @@ const Login = ({ setUser }) => {
                     required
                   />
                 </div>
-                <button type="submit" className="lg-btn" disabled={loading}>
+                <button
+                  type="submit"
+                  className="lg-btn"
+                  disabled={loading || googleLoading}
+                >
                   {loading ? "Signing in…" : "Sign In"}
                 </button>
               </form>
@@ -422,11 +517,58 @@ const Login = ({ setUser }) => {
                     required
                   />
                 </div>
-                <button type="submit" className="lg-btn" disabled={loading}>
+                <button
+                  type="submit"
+                  className="lg-btn"
+                  disabled={loading || googleLoading}
+                >
                   {loading ? "Creating account…" : "Create Account"}
                 </button>
               </form>
             )}
+
+            {/* Google OAuth — styled to match the dark card theme */}
+            <div className="lg-separator">
+              <div className="lg-separator-line" />
+              <span className="lg-separator-text">or continue with</span>
+              <div className="lg-separator-line" />
+            </div>
+
+            <button
+              className="lg-google-btn"
+              onClick={() => handleGoogleLogin()}
+              disabled={loading || googleLoading}
+            >
+              {googleLoading ? (
+                <>
+                  <div className="lg-google-spinner" />
+                  Connecting…
+                </>
+              ) : (
+                <>
+                  {/* Official Google "G" logo */}
+                  <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
+                    <path
+                      d="M17.64 9.20455C17.64 8.56636 17.5827 7.95273 17.4764 7.36364H9V10.845H13.8436C13.635 11.97 13.0009 12.9232 12.0477 13.5614V15.8195H14.9564C16.6582 14.2527 17.64 11.9455 17.64 9.20455Z"
+                      fill="#4285F4"
+                    />
+                    <path
+                      d="M9 18C11.43 18 13.4673 17.1941 14.9564 15.8195L12.0477 13.5614C11.2418 14.1014 10.2109 14.4205 9 14.4205C6.65591 14.4205 4.67182 12.8373 3.96409 10.71H0.957275V13.0418C2.43818 15.9832 5.48182 18 9 18Z"
+                      fill="#34A853"
+                    />
+                    <path
+                      d="M3.96409 10.71C3.78409 10.17 3.68182 9.59318 3.68182 9C3.68182 8.40682 3.78409 7.83 3.96409 7.29V4.95818H0.957275C0.347727 6.17318 0 7.54773 0 9C0 10.4523 0.347727 11.8268 0.957275 13.0418L3.96409 10.71Z"
+                      fill="#FBBC05"
+                    />
+                    <path
+                      d="M9 3.57955C10.3214 3.57955 11.5077 4.03364 12.4405 4.92545L15.0218 2.34409C13.4632 0.891818 11.4259 0 9 0C5.48182 0 2.43818 2.01682 0.957275 4.95818L3.96409 7.29C4.67182 5.16273 6.65591 3.57955 9 3.57955Z"
+                      fill="#EA4335"
+                    />
+                  </svg>
+                  Continue with Google
+                </>
+              )}
+            </button>
           </div>
         </div>
       </div>

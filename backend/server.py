@@ -33,6 +33,9 @@ load_dotenv(ROOT_DIR / '.env')
 LYZR_API_KEY = os.environ.get("LYZR_API_KEY")
 LYZR_AGENT_ID = os.environ.get("LYZR_AGENT_ID")
 
+# Google OAuth config
+GOOGLE_CLIENT_ID = os.environ.get("GOOGLE_CLIENT_ID")
+
 # MongoDB connection
 mongo_url = os.environ['MONGO_URL']
 client = AsyncIOMotorClient(mongo_url)
@@ -58,7 +61,7 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# ── Models ──────────────────────────────────────────────────────────────────
+# ── Models ────────────────────────────────────────────────────────────────────
 
 class UserCreate(BaseModel):
     email: str
@@ -91,7 +94,15 @@ class LearningPathInput(BaseModel):
     skills: List[str]
     target_role: str
 
-# ── Helpers ──────────────────────────────────────────────────────────────────
+# Google OAuth request model
+# Frontend uses useGoogleLogin (access_token flow) which fetches userinfo
+# from Google's /userinfo endpoint and sends email + name + sub to us.
+class GoogleAuthRequest(BaseModel):
+    email: str
+    name: Optional[str] = None
+    sub: str
+
+# ── Helpers ───────────────────────────────────────────────────────────────────
 
 def create_access_token(data: dict):
     to_encode = data.copy()
@@ -163,6 +174,13 @@ async def login(user_data: UserLogin):
     if not user:
         raise HTTPException(status_code=401, detail="Invalid email or password")
 
+    # Google-only accounts have no password — block password login for them
+    if not user.get("password"):
+        raise HTTPException(
+            status_code=401,
+            detail="This account uses Google sign-in. Please use 'Continue with Google'."
+        )
+
     if not bcrypt.checkpw(user_data.password.encode(), user["password"].encode()):
         raise HTTPException(status_code=401, detail="Invalid email or password")
 
@@ -176,6 +194,63 @@ async def login(user_data: UserLogin):
         }
     }
 
+
+@api_router.post("/auth/google")
+async def google_login(body: GoogleAuthRequest):
+    """
+    Google OAuth endpoint — called after frontend fetches userinfo
+    from Google's /userinfo endpoint using useGoogleLogin (access_token flow).
+
+    Receives: { email, name, sub }
+    Returns:  same JWT structure as /auth/login so the rest of the app
+              never knows whether login came from email or Google.
+    """
+    if not body.email:
+        raise HTTPException(status_code=400, detail="Email is required")
+
+    # Sanitise name — fall back to email prefix if Google didn't return one
+    name = (body.name or "").strip() or body.email.split("@")[0]
+
+    # Find existing user by email OR by google_sub (handles edge cases)
+    user = await users_collection.find_one(
+        {"$or": [{"email": body.email}, {"google_sub": body.sub}]}
+    )
+
+    if not user:
+        # New user — create account (no password)
+        user_doc = {
+            "email": body.email,
+            "name": name,
+            "password": None,           # Google users have no password
+            "google_sub": body.sub,     # store sub for future lookups
+            "created_at": datetime.utcnow()
+        }
+        result = await users_collection.insert_one(user_doc)
+        user_id = str(result.inserted_id)
+        logging.info(f"New Google user created: {body.email}")
+    else:
+        user_id = str(user["_id"])
+        name = user.get("name") or name   # keep existing name if already set
+
+        # Back-fill google_sub if this user previously signed up with email
+        if not user.get("google_sub"):
+            await users_collection.update_one(
+                {"_id": user["_id"]},
+                {"$set": {"google_sub": body.sub}}
+            )
+        logging.info(f"Existing user signed in via Google: {body.email}")
+
+    # Return identical JWT structure as /auth/login
+    token = create_access_token({"sub": user_id})
+    return {
+        "access_token": token,
+        "user": {
+            "id": user_id,
+            "email": body.email,
+            "name": name
+        }
+    }
+
 # ── AI Chat ───────────────────────────────────────────────────────────────────
 
 @api_router.post("/chat")
@@ -186,31 +261,31 @@ async def chat_endpoint(payload: dict):
 
     # Fallback demo replies (used if Lyzr is unavailable)
     demo_replies = {
-        "hello": "Hi there! 👋 I'm your AI Career Advisor. Ask me about resumes, interviews, salary negotiation, or career growth!",
-        "hi":    "Hello! 😊 How can I help with your career today?",
-        "resume": "To improve your resume: 1) Use quantifiable achievements, 2) Add keywords from job descriptions, 3) Use clear sections (Summary, Experience, Skills, Education), 4) Start bullets with action verbs like 'Led', 'Built', 'Optimized'.",
+        "hello":     "Hi there! 👋 I'm your AI Career Advisor. Ask me about resumes, interviews, salary negotiation, or career growth!",
+        "hi":        "Hello! 😊 How can I help with your career today?",
+        "resume":    "To improve your resume: 1) Use quantifiable achievements, 2) Add keywords from job descriptions, 3) Use clear sections (Summary, Experience, Skills, Education), 4) Start bullets with action verbs like 'Led', 'Built', 'Optimized'.",
         "interview": "For interviews: 1) Research the company, 2) Use the STAR method, 3) Prepare achievement examples, 4) Ask thoughtful questions, 5) Send a follow-up thank-you email.",
-        "salary": "Salary tips: 1) Research market rates, 2) Negotiate after the offer, 3) Consider total compensation, 4) Get agreements in writing.",
-        "career": "Career growth: 1) Set clear milestones, 2) Build skills via courses, 3) Network in your field, 4) Find a mentor, 5) Take on stretch projects.",
-        "skill":  "Top skills in 2025: Python, React, AWS, SQL, Machine Learning, Communication, and Project Management.",
-        "job":    "Job search tips: 1) Tailor your resume per role, 2) Apply on company sites directly, 3) Network on LinkedIn, 4) Follow up after 1 week.",
+        "salary":    "Salary tips: 1) Research market rates, 2) Negotiate after the offer, 3) Consider total compensation, 4) Get agreements in writing.",
+        "career":    "Career growth: 1) Set clear milestones, 2) Build skills via courses, 3) Network in your field, 4) Find a mentor, 5) Take on stretch projects.",
+        "skill":     "Top skills in 2025: Python, React, AWS, SQL, Machine Learning, Communication, and Project Management.",
+        "job":       "Job search tips: 1) Tailor your resume per role, 2) Apply on company sites directly, 3) Network on LinkedIn, 4) Follow up after 1 week.",
     }
     message_lower = message.lower()
     fallback_reply = next(
         (v for k, v in demo_replies.items() if k in message_lower),
-        f"Great question! I can help with resume tips, interview prep, salary negotiation, and career growth. Could you be more specific?"
+        "Great question! I can help with resume tips, interview prep, salary negotiation, and career growth. Could you be more specific?"
     )
 
     # Try Lyzr API
     if LYZR_API_KEY and LYZR_AGENT_ID:
         try:
             response = requests.post(
-                "https://agent-prod.studio.lyzr.ai/v3/inference/chat/",  # ← trailing slash required!
+                "https://agent-prod.studio.lyzr.ai/v3/inference/chat/",
                 json={
                     "user_id": "careercraft-user",
                     "agent_id": LYZR_AGENT_ID,
                     "session_id": "careercraft-session",
-                    "message": message                   # ← "message" not "input"
+                    "message": message
                 },
                 headers={
                     "Content-Type": "application/json",
@@ -220,9 +295,6 @@ async def chat_endpoint(payload: dict):
             )
             if response.status_code == 200:
                 data = response.json()
-
-                # Lyzr returns: {"response": "{\"result\": {\"message\": \"...\"}}", ...}
-                # The "response" field is a JSON STRING — parse it!
                 raw = data.get("response", "")
                 if raw:
                     try:
@@ -234,7 +306,7 @@ async def chat_endpoint(payload: dict):
                             or raw
                         )
                     except (json.JSONDecodeError, AttributeError):
-                        lyzr_reply = raw  # use raw string if not parseable
+                        lyzr_reply = raw
 
                     if lyzr_reply:
                         logging.info("Lyzr API responded successfully")
@@ -381,7 +453,7 @@ async def analyze_resume_endpoint(
         logging.info(f"Detected Skills: {detected_skills}")
         logging.info(f"Real Courses Fetched: {len(courses)}")
 
-        # Step 6: Save to DB (all variables now defined)
+        # Step 6: Save to DB
         resume_doc = {
             "user_id": user_id or "guest",
             "resume_score": score,
@@ -496,7 +568,6 @@ async def courses_health():
         diagnostics['fallback_count'] = 0
 
     return diagnostics
-
 
 # ── Mount Router ──────────────────────────────────────────────────────────────
 
